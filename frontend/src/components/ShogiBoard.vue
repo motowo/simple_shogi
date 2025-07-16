@@ -1,5 +1,10 @@
 <template>
   <div class="shogi-board-container">
+    <!-- 現在のプレイヤー表示 -->
+    <div class="current-player">
+      現在の手番: {{ currentPlayer === 'sente' ? '先手' : '後手' }}
+    </div>
+    
     <!-- 列ラベル（上部） -->
     <div class="col-labels">
       <div class="corner-spacer"></div>
@@ -57,24 +62,132 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import type { BoardCell, Position } from '../types/shogi'
+import type { BoardCell, Position, Player } from '../types/shogi'
 import { ROW_LABELS, COL_LABELS } from '../types/shogi'
-import { formatKifuPosition } from '../utils/boardUtils'
+import { formatKifuPosition, isSamePosition } from '../utils/boardUtils'
 import { initializeGameBoard } from '../utils/initialBoard'
 import ShogiPiece from './ShogiPiece.vue'
 
 // 9x9の将棋盤を初期化
 const board = ref<BoardCell[][]>([])
+const selectedPosition = ref<Position | null>(null)
+const currentPlayer = ref<Player>('sente')
+const possibleMoves = ref<Position[]>([])
 
 const initializeBoard = () => {
   board.value = initializeGameBoard()
 }
 
+const clearSelection = () => {
+  selectedPosition.value = null
+  possibleMoves.value = []
+  
+  // 全てのセルの選択状態とハイライト状態をクリア
+  board.value.forEach(row => {
+    row.forEach(cell => {
+      cell.isSelected = false
+      cell.isHighlighted = false
+    })
+  })
+}
+
+const selectPiece = (row: number, col: number) => {
+  const position = { row, col }
+  const cell = board.value[row][col]
+  
+  // 駒がない場合は何もしない
+  if (!cell.piece) return
+  
+  // 現在のプレイヤーの駒でない場合は何もしない
+  if (cell.piece.player !== currentPlayer.value) return
+  
+  // 既に選択されている場合は選択解除
+  if (selectedPosition.value && isSamePosition(selectedPosition.value, position)) {
+    clearSelection()
+    return
+  }
+  
+  // 新しい駒を選択
+  clearSelection()
+  selectedPosition.value = position
+  cell.isSelected = true
+  
+  // 可能な手を計算（仮実装：前方1マス）
+  calculatePossibleMoves(position, cell.piece)
+  
+  console.log(`Selected piece at ${formatKifuPosition(position)}`)
+}
+
+const calculatePossibleMoves = (position: Position, piece: any) => {
+  const moves: Position[] = []
+  
+  // 簡単な実装：歩兵は前方1マス
+  if (piece.type === 'pawn') {
+    const direction = piece.player === 'sente' ? -1 : 1
+    const newRow = position.row + direction
+    
+    if (newRow >= 0 && newRow < 9) {
+      const targetCell = board.value[newRow][position.col]
+      if (!targetCell.piece) {
+        moves.push({ row: newRow, col: position.col })
+      }
+    }
+  }
+  
+  // 可能な手をハイライト表示
+  moves.forEach(move => {
+    board.value[move.row][move.col].isHighlighted = true
+  })
+  
+  possibleMoves.value = moves
+}
+
 const handleCellClick = (row: number, col: number) => {
   const position = { row, col }
   const kifuPosition = formatKifuPosition(position)
+  
   console.log(`Clicked cell at ${kifuPosition} (row: ${row}, col: ${col})`)
-  // クリック処理は後で実装
+  
+  // 駒が選択されていない場合は駒を選択
+  if (!selectedPosition.value) {
+    selectPiece(row, col)
+    return
+  }
+  
+  // 駒が選択されている場合
+  const cell = board.value[row][col]
+  
+  // 同じ駒をクリックした場合は選択解除
+  if (isSamePosition(selectedPosition.value, position)) {
+    clearSelection()
+    return
+  }
+  
+  // 自分の駒をクリックした場合は選択変更
+  if (cell.piece && cell.piece.player === currentPlayer.value) {
+    selectPiece(row, col)
+    return
+  }
+  
+  // 可能な手の位置をクリックした場合は移動（仮実装）
+  const isPossibleMove = possibleMoves.value.some(move => isSamePosition(move, position))
+  if (isPossibleMove) {
+    // 移動処理（仮実装）
+    const selectedCell = board.value[selectedPosition.value.row][selectedPosition.value.col]
+    const targetCell = board.value[row][col]
+    
+    targetCell.piece = selectedCell.piece
+    selectedCell.piece = null
+    
+    // 手番を交代
+    currentPlayer.value = currentPlayer.value === 'sente' ? 'gote' : 'sente'
+    
+    clearSelection()
+    console.log(`Moved to ${kifuPosition}`)
+  } else {
+    // 移動できない場合は選択解除
+    clearSelection()
+  }
 }
 
 // コンポーネントマウント時に盤面を初期化
@@ -91,6 +204,17 @@ onMounted(() => {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.current-player {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: #8b4513;
+  margin-bottom: 16px;
+  padding: 8px 16px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 4px;
 }
 
 .col-labels {

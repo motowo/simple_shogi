@@ -38,6 +38,25 @@ export interface BoardState {
   cells: BoardCell[][]
   currentPlayer: Player
   selectedPosition: Position | null
+  possibleMoves: Position[]
+}
+
+// ゲーム状態
+export interface GameState {
+  board: BoardState
+  isGameOver: boolean
+  winner: Player | null
+  moveHistory: Move[]
+}
+
+// 移動情報
+export interface Move {
+  from: Position
+  to: Position
+  piece: Piece
+  capturedPiece?: Piece
+  isPromotion?: boolean
+  timestamp: Date
 }
 
 // 日本語の行ラベル
