@@ -1,0 +1,8 @@
+.git
+.gitignore
+README.md
+CLAUDE.md
+spec.md
+docs/
+.DS_Store
+*.log

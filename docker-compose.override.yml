@@ -1,0 +1,8 @@
+# 開発環境専用の設定（自動的にdocker-compose.ymlとマージされる）
+version: '3.8'
+
+services:
+  frontend:
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # ホットリロード用（Windows/Mac対応）
+      - NODE_ENV=development

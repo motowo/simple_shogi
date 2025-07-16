@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    container_name: shogi-frontend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    command: npm run dev
+    stdin_open: true
+    tty: true
+
+  # 将来の拡張用（現在はコメントアウト）
+  # backend:
+  #   build:
+  #     context: ./backend
+  #   container_name: shogi-backend
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - ./backend:/app
+  #     - /app/node_modules
+  #   environment:
+  #     - NODE_ENV=development
+  #   command: npm run dev
+
+  # database:
+  #   image: postgres:15-alpine
+  #   container_name: shogi-database
+  #   environment:
+  #     POSTGRES_DB: shogi
+  #     POSTGRES_USER: shogi_user
+  #     POSTGRES_PASSWORD: shogi_password
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+
+# volumes:
+#   postgres_data:
