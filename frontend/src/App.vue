@@ -1,12 +1,14 @@
 <template>
   <div id="app">
     <h1>シンプル将棋</h1>
-    <p>Vue.js + TypeScript プロジェクトセットアップ完了</p>
+    <div class="game-container">
+      <ShogiBoard />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// アプリケーションのメインコンポーネント
+import ShogiBoard from './components/ShogiBoard.vue'
 </script>
 
 <style scoped>
@@ -15,11 +17,19 @@
     'Open Sans', 'Helvetica Neue', sans-serif;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  padding: 20px;
 }
 
 h1 {
   font-size: 2.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
+  color: #8b4513;
+}
+
+.game-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 600px;
 }
 </style>
