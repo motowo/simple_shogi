@@ -44,7 +44,10 @@
             }"
             @click="handleCellClick(rowIndex, colIndex)"
           >
-            <!-- 駒がある場合の表示は後で実装 -->
+            <ShogiPiece 
+              v-if="cell.piece" 
+              :piece="cell.piece" 
+            />
           </div>
         </div>
       </div>
@@ -56,13 +59,15 @@
 import { ref, onMounted } from 'vue'
 import type { BoardCell, Position } from '../types/shogi'
 import { ROW_LABELS, COL_LABELS } from '../types/shogi'
-import { initializeEmptyBoard, formatKifuPosition } from '../utils/boardUtils'
+import { formatKifuPosition } from '../utils/boardUtils'
+import { initializeGameBoard } from '../utils/initialBoard'
+import ShogiPiece from './ShogiPiece.vue'
 
 // 9x9の将棋盤を初期化
 const board = ref<BoardCell[][]>([])
 
 const initializeBoard = () => {
-  board.value = initializeEmptyBoard()
+  board.value = initializeGameBoard()
 }
 
 const handleCellClick = (row: number, col: number) => {

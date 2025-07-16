@@ -45,4 +45,27 @@ describe('ShogiBoard', () => {
     expect(rowLabels[0].text()).toBe('一')
     expect(rowLabels[8].text()).toBe('九')
   })
+
+  it('displays initial piece placement', () => {
+    const wrapper = mount(ShogiBoard)
+    
+    // 先手の王が正しい位置にあることを確認
+    const senteKingCell = wrapper.find('[data-row="8"][data-col="4"]')
+    expect(senteKingCell.exists()).toBe(true)
+    
+    // 駒が表示されていることを確認
+    const pieces = wrapper.findAllComponents({ name: 'ShogiPiece' })
+    expect(pieces.length).toBeGreaterThan(0)
+  })
+
+  it('displays pieces in correct initial positions', () => {
+    const wrapper = mount(ShogiBoard)
+    
+    // 先手の歩兵が7段目（row=6）に配置されていることを確認
+    for (let col = 0; col < 9; col++) {
+      const pawnCell = wrapper.find(`[data-row="6"][data-col="${col}"]`)
+      const piece = pawnCell.findComponent({ name: 'ShogiPiece' })
+      expect(piece.exists()).toBe(true)
+    }
+  })
 })
