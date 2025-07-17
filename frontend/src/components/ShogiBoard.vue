@@ -136,6 +136,13 @@
       @promote="handlePromotionChoice(true)"
       @no-promote="handlePromotionChoice(false)"
     />
+
+    <!-- 対局開始ダイアログ -->
+    <GameStartDialog
+      :is-visible="showGameStartDialog"
+      @start-game="startGame"
+      @cancel="cancelGameStart"
+    />
   </div>
 </template>
 
@@ -163,6 +170,7 @@ import ResetButton from './ResetButton.vue'
 import MoveHistory from './MoveHistory.vue'
 import GameTimer from './GameTimer.vue'
 import GameHistory from './GameHistory.vue'
+import GameStartDialog from './GameStartDialog.vue'
 
 // 9x9の将棋盤を初期化
 const board = ref<BoardCell[][]>([])
@@ -189,6 +197,10 @@ const gameTimer = ref<InstanceType<typeof GameTimer> | null>(null)
 const gameHistory = ref<InstanceType<typeof GameHistory> | null>(null)
 const activeTab = ref<'moves' | 'history'>('moves')
 
+// ゲーム開始状態
+const showGameStartDialog = ref(true)
+const gameStarted = ref(false)
+
 const initializeBoard = () => {
   board.value = initializeGameBoard()
   capturedPieces.value = new Map()
@@ -206,12 +218,35 @@ const initializeBoard = () => {
   clearSelection()
 }
 
+// ゲーム開始処理
+const startGame = () => {
+  showGameStartDialog.value = false
+  gameStarted.value = true
+  
+  // タイマーを開始
+  if (gameTimer.value) {
+    gameTimer.value.startGame()
+  }
+  
+  console.log('Game started')
+}
+
+// ゲーム開始キャンセル処理
+const cancelGameStart = () => {
+  showGameStartDialog.value = false
+  // キャンセル時は何もしない（再度ダイアログを表示するかは要件次第）
+}
+
 const resetGame = () => {
   initializeBoard()
 
-  // タイマーを再開
+  // ゲーム状態をリセット
+  gameStarted.value = false
+  showGameStartDialog.value = true
+  
+  // タイマーを停止
   if (gameTimer.value) {
-    gameTimer.value.startGame()
+    gameTimer.value.stopTimer()
   }
   
   // 手順タブに切り替え
@@ -232,6 +267,8 @@ const saveGameResult = () => {
 }
 
 const handleResign = (resigningPlayer: Player) => {
+  if (!gameStarted.value) return
+  
   isGameOver.value = true
   winner.value = resigningPlayer === 'sente' ? 'gote' : 'sente'
   gameEndReason.value = 'resign'
@@ -239,6 +276,9 @@ const handleResign = (resigningPlayer: Player) => {
   
   // 対局結果を保存
   saveGameResult()
+  
+  // ゲーム状態をリセット（ダイアログ表示は「新しいゲーム」ボタンで）
+  gameStarted.value = false
   
   console.log(`${resigningPlayer} resigned. Winner: ${winner.value}`)
 }
@@ -260,6 +300,9 @@ const checkGameState = () => {
     // 対局結果を保存
     saveGameResult()
     
+    // ゲーム状態をリセット（ダイアログ表示は「新しいゲーム」ボタンで）
+    gameStarted.value = false
+    
     console.log(`Game Over! Winner: ${winner.value} by checkmate`)
   }
 }
@@ -279,8 +322,8 @@ const clearSelection = () => {
 }
 
 const handleDropPieceSelect = (pieceType: PieceType) => {
-  // ゲーム終了時は操作無効
-  if (isGameOver.value) return
+  // ゲーム開始前やゲーム終了時は操作無効
+  if (!gameStarted.value || isGameOver.value) return
 
   clearSelection()
   selectedDropPiece.value = pieceType
@@ -343,8 +386,8 @@ const calculatePossibleMoves = (position: Position, piece: Piece) => {
 }
 
 const handleCellClick = (row: number, col: number) => {
-  // ゲーム終了時は操作無効
-  if (isGameOver.value) return
+  // ゲーム開始前やゲーム終了時は操作無効
+  if (!gameStarted.value || isGameOver.value) return
 
   const position = { row, col }
   const kifuPosition = formatKifuPosition(position)
