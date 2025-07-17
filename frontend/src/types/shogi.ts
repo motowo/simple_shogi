@@ -60,6 +60,19 @@ export interface Move {
   timestamp: Date
 }
 
+// ゲーム情報（対局記録用）
+export interface GameInfo {
+  id: string
+  startTime: Date
+  endTime?: Date
+  winner?: Player
+  gameEndReason?: 'checkmate' | 'resign' | null
+  totalMoves: number
+  senteTotalTime: number
+  goteTotalTime: number
+  gameElapsedTime: number
+}
+
 // 日本語の行ラベル
 export const ROW_LABELS = ['一', '二', '三', '四', '五', '六', '七', '八', '九']
 

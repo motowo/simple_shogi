@@ -89,12 +89,43 @@
           />
         </div>
 
-        <!-- 手数表示（縦長） -->
-        <div class="move-history-area">
-          <MoveHistory :moves="moveHistory" />
+        <!-- 対局時間 -->
+        <GameTimer ref="gameTimer" :current-player="currentPlayer" :is-game-over="isGameOver" />
+
+        <!-- タブ切り替え -->
+        <div class="tab-container">
+          <div class="tab-buttons">
+            <button 
+              class="tab-button"
+              :class="{ active: activeTab === 'moves' }"
+              @click="activeTab = 'moves'"
+            >
+              手順
+            </button>
+            <button 
+              class="tab-button"
+              :class="{ active: activeTab === 'history' }"
+              @click="activeTab = 'history'"
+            >
+              履歴
+            </button>
+          </div>
+          
+          <div class="tab-content">
+            <!-- 手数表示 -->
+            <div v-if="activeTab === 'moves'" class="tab-pane">
+              <MoveHistory :moves="moveHistory" />
+            </div>
+            
+            <!-- 対局履歴 -->
+            <div v-if="activeTab === 'history'" class="tab-pane">
+              <GameHistory ref="gameHistory" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
+
 
     <!-- 成り確認ダイアログ -->
     <PromotionDialog
@@ -123,12 +154,15 @@ import {
 } from '../utils/capturedPieces'
 import { handlePromotion } from '../utils/promotion'
 import { isKingInCheck, isCheckmate, isCheckingMove } from '../utils/checkDetection'
+import { saveGameToHistory } from '../utils/gameStorage'
 import ShogiPiece from './ShogiPiece.vue'
 import CapturedPieces from './CapturedPieces.vue'
 import PromotionDialog from './PromotionDialog.vue'
 import ResignButton from './ResignButton.vue'
 import ResetButton from './ResetButton.vue'
 import MoveHistory from './MoveHistory.vue'
+import GameTimer from './GameTimer.vue'
+import GameHistory from './GameHistory.vue'
 
 // 9x9の将棋盤を初期化
 const board = ref<BoardCell[][]>([])
@@ -151,6 +185,9 @@ const isGameOver = ref(false)
 const winner = ref<Player | null>(null)
 const gameEndReason = ref<'checkmate' | 'resign' | null>(null)
 const moveHistory = ref<Move[]>([])
+const gameTimer = ref<InstanceType<typeof GameTimer> | null>(null)
+const gameHistory = ref<InstanceType<typeof GameHistory> | null>(null)
+const activeTab = ref<'moves' | 'history'>('moves')
 
 const initializeBoard = () => {
   board.value = initializeGameBoard()
@@ -171,6 +208,27 @@ const initializeBoard = () => {
 
 const resetGame = () => {
   initializeBoard()
+
+  // タイマーを再開
+  if (gameTimer.value) {
+    gameTimer.value.startGame()
+  }
+  
+  // 手順タブに切り替え
+  activeTab.value = 'moves'
+}
+
+// 対局結果を保存
+const saveGameResult = () => {
+  if (gameTimer.value && winner.value && gameEndReason.value) {
+    const gameInfo = gameTimer.value.getGameInfo(winner.value, gameEndReason.value, moveHistory.value.length)
+    saveGameToHistory(gameInfo)
+    
+    // 履歴を更新
+    if (gameHistory.value) {
+      gameHistory.value.loadHistory()
+    }
+  }
 }
 
 const handleResign = (resigningPlayer: Player) => {
@@ -178,6 +236,10 @@ const handleResign = (resigningPlayer: Player) => {
   winner.value = resigningPlayer === 'sente' ? 'gote' : 'sente'
   gameEndReason.value = 'resign'
   clearSelection()
+  
+  // 対局結果を保存
+  saveGameResult()
+  
   console.log(`${resigningPlayer} resigned. Winner: ${winner.value}`)
 }
 
@@ -194,6 +256,10 @@ const checkGameState = () => {
     isGameOver.value = true
     winner.value = currentPlayer.value === 'sente' ? 'gote' : 'sente'
     gameEndReason.value = 'checkmate'
+    
+    // 対局結果を保存
+    saveGameResult()
+    
     console.log(`Game Over! Winner: ${winner.value} by checkmate`)
   }
 }
@@ -625,6 +691,59 @@ onUnmounted(() => {
   min-height: 200px;
 }
 
+.right-area {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 250px;
+}
+
+/* タブコンテナのスタイル */
+.tab-container {
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tab-buttons {
+  display: flex;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #ddd;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 8px 16px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.tab-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.tab-button.active {
+  background-color: white;
+  color: #8b4513;
+  border-bottom: 2px solid #8b4513;
+}
+
+.tab-content {
+  flex: 1;
+  min-height: 300px;
+}
+
+.tab-pane {
+  height: 100%;
+}
+
 .col-labels {
   display: flex;
   margin-bottom: 8px;
@@ -761,6 +880,11 @@ onUnmounted(() => {
     width: 100%;
     flex-direction: column;
     gap: 10px;
+  }
+
+  .right-area {
+    width: 100%;
+    min-width: auto;
   }
 
   .control-buttons {

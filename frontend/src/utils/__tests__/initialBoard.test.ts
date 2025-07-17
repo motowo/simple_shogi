@@ -109,7 +109,6 @@ describe('initializeGameBoard', () => {
       player: 'gote',
       isPromoted: false
     })
-
     // 後手の歩兵
     for (let col = 0; col < 9; col++) {
       expect(board[2][col].piece).toEqual({
