@@ -1,12 +1,6 @@
 <template>
   <div class="resign-button-container">
-    <button
-      class="resign-button"
-      :disabled="isGameOver"
-      @click="showConfirmation"
-    >
-      投了
-    </button>
+    <button class="resign-button" :disabled="isGameOver" @click="showConfirmation">投了</button>
 
     <!-- 投了確認ダイアログ -->
     <div v-if="showDialog" class="resign-confirmation-overlay">
@@ -18,20 +12,10 @@
         <p class="confirmation-note">
           投了すると{{ currentPlayer === 'sente' ? '後手' : '先手' }}の勝ちになります。
         </p>
-        
+
         <div class="confirmation-buttons">
-          <button 
-            class="confirm-button confirm-yes"
-            @click="confirmResign"
-          >
-            はい
-          </button>
-          <button 
-            class="confirm-button confirm-no"
-            @click="cancelResign"
-          >
-            いいえ
-          </button>
+          <button class="confirm-button confirm-yes" @click="confirmResign">はい</button>
+          <button class="confirm-button confirm-no" @click="cancelResign">いいえ</button>
         </div>
       </div>
     </div>

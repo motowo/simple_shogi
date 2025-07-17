@@ -49,7 +49,7 @@ describe('ResignButton', () => {
     })
 
     await wrapper.find('.resign-button').trigger('click')
-    
+
     expect(wrapper.find('.resign-confirmation').exists()).toBe(true)
     expect(wrapper.find('.confirmation-message').text()).toContain('投了しますか？')
   })
@@ -64,10 +64,10 @@ describe('ResignButton', () => {
 
     // 投了ボタンをクリック
     await wrapper.find('.resign-button').trigger('click')
-    
+
     // 確認ダイアログで「はい」をクリック
     await wrapper.find('.confirm-yes').trigger('click')
-    
+
     expect(wrapper.emitted('resign')).toHaveLength(1)
     expect(wrapper.emitted('resign')![0]).toEqual(['sente'])
   })
@@ -82,10 +82,10 @@ describe('ResignButton', () => {
 
     // 投了ボタンをクリック
     await wrapper.find('.resign-button').trigger('click')
-    
+
     // 確認ダイアログで「いいえ」をクリック
     await wrapper.find('.confirm-no').trigger('click')
-    
+
     expect(wrapper.emitted('resign')).toBeUndefined()
   })
 
@@ -100,7 +100,7 @@ describe('ResignButton', () => {
     // 投了ボタンをクリック
     await wrapper.find('.resign-button').trigger('click')
     expect(wrapper.find('.resign-confirmation').exists()).toBe(true)
-    
+
     // 確認ダイアログで「いいえ」をクリック
     await wrapper.find('.confirm-no').trigger('click')
     expect(wrapper.find('.resign-confirmation').exists()).toBe(false)
@@ -115,7 +115,7 @@ describe('ResignButton', () => {
     })
 
     await wrapper.find('.resign-button').trigger('click')
-    
+
     const message = wrapper.find('.confirmation-message').text()
     expect(message).toContain('後手')
     expect(message).toContain('投了しますか？')

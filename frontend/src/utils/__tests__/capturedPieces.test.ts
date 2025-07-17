@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { 
-  addCapturedPiece, 
-  removeCapturedPiece, 
-  getCapturedPieces, 
+import {
+  addCapturedPiece,
+  removeCapturedPiece,
+  getCapturedPieces,
   canDropPiece,
-  getDroppablePieces 
+  getDroppablePieces
 } from '../capturedPieces'
 import { initializeEmptyBoard } from '../boardUtils'
 import type { Piece, Player, Position } from '../../types/shogi'
@@ -14,9 +14,9 @@ describe('capturedPieces', () => {
     it('adds a captured piece to the collection', () => {
       const capturedPieces = new Map<Player, Piece[]>()
       const piece: Piece = { type: 'pawn', player: 'gote', isPromoted: false }
-      
+
       addCapturedPiece(capturedPieces, 'sente', piece)
-      
+
       const sentePieces = getCapturedPieces(capturedPieces, 'sente')
       expect(sentePieces).toHaveLength(1)
       expect(sentePieces[0]).toEqual({ type: 'pawn', player: 'sente', isPromoted: false })
@@ -25,9 +25,9 @@ describe('capturedPieces', () => {
     it('converts promoted pieces to normal pieces when captured', () => {
       const capturedPieces = new Map<Player, Piece[]>()
       const promotedPawn: Piece = { type: 'pawn', player: 'gote', isPromoted: true }
-      
+
       addCapturedPiece(capturedPieces, 'sente', promotedPawn)
-      
+
       const sentePieces = getCapturedPieces(capturedPieces, 'sente')
       expect(sentePieces[0].isPromoted).toBe(false)
     })
@@ -37,17 +37,17 @@ describe('capturedPieces', () => {
     it('removes a piece from captured pieces', () => {
       const capturedPieces = new Map<Player, Piece[]>()
       const piece: Piece = { type: 'pawn', player: 'gote', isPromoted: false }
-      
+
       addCapturedPiece(capturedPieces, 'sente', piece)
       const removed = removeCapturedPiece(capturedPieces, 'sente', 'pawn')
-      
+
       expect(removed).toBeTruthy()
       expect(getCapturedPieces(capturedPieces, 'sente')).toHaveLength(0)
     })
 
     it('returns false when piece is not available', () => {
       const capturedPieces = new Map<Player, Piece[]>()
-      
+
       const removed = removeCapturedPiece(capturedPieces, 'sente', 'pawn')
       expect(removed).toBe(false)
     })
@@ -58,9 +58,9 @@ describe('capturedPieces', () => {
       const board = initializeEmptyBoard()
       const capturedPieces = new Map<Player, Piece[]>()
       const piece: Piece = { type: 'pawn', player: 'gote', isPromoted: false }
-      
+
       addCapturedPiece(capturedPieces, 'sente', piece)
-      
+
       const canDrop = canDropPiece(board, capturedPieces, 'sente', 'pawn', { row: 4, col: 4 })
       expect(canDrop).toBe(true)
     })
@@ -69,10 +69,10 @@ describe('capturedPieces', () => {
       const board = initializeEmptyBoard()
       const capturedPieces = new Map<Player, Piece[]>()
       const piece: Piece = { type: 'pawn', player: 'gote', isPromoted: false }
-      
+
       board[4][4].piece = { type: 'king', player: 'gote', isPromoted: false }
       addCapturedPiece(capturedPieces, 'sente', piece)
-      
+
       const canDrop = canDropPiece(board, capturedPieces, 'sente', 'pawn', { row: 4, col: 4 })
       expect(canDrop).toBe(false)
     })
@@ -80,7 +80,7 @@ describe('capturedPieces', () => {
     it('prevents dropping piece when not in captured pieces', () => {
       const board = initializeEmptyBoard()
       const capturedPieces = new Map<Player, Piece[]>()
-      
+
       const canDrop = canDropPiece(board, capturedPieces, 'sente', 'pawn', { row: 4, col: 4 })
       expect(canDrop).toBe(false)
     })
@@ -89,11 +89,11 @@ describe('capturedPieces', () => {
       const board = initializeEmptyBoard()
       const capturedPieces = new Map<Player, Piece[]>()
       const piece: Piece = { type: 'pawn', player: 'gote', isPromoted: false }
-      
+
       // 同じ列に先手の歩兵を配置
       board[6][4].piece = { type: 'pawn', player: 'sente', isPromoted: false }
       addCapturedPiece(capturedPieces, 'sente', piece)
-      
+
       const canDrop = canDropPiece(board, capturedPieces, 'sente', 'pawn', { row: 4, col: 4 })
       expect(canDrop).toBe(false)
     })
@@ -102,9 +102,9 @@ describe('capturedPieces', () => {
       const board = initializeEmptyBoard()
       const capturedPieces = new Map<Player, Piece[]>()
       const piece: Piece = { type: 'pawn', player: 'gote', isPromoted: false }
-      
+
       addCapturedPiece(capturedPieces, 'sente', piece)
-      
+
       // 先手の歩兵を最前線（0行目）に打とうとする
       const canDrop = canDropPiece(board, capturedPieces, 'sente', 'pawn', { row: 0, col: 4 })
       expect(canDrop).toBe(false)
@@ -114,9 +114,9 @@ describe('capturedPieces', () => {
       const board = initializeEmptyBoard()
       const capturedPieces = new Map<Player, Piece[]>()
       const piece: Piece = { type: 'lance', player: 'gote', isPromoted: false }
-      
+
       addCapturedPieces(capturedPieces, 'sente', piece)
-      
+
       // 先手の香車を最前線（0行目）に打とうとする
       const canDrop = canDropPiece(board, capturedPieces, 'sente', 'lance', { row: 0, col: 4 })
       expect(canDrop).toBe(false)
@@ -126,13 +126,13 @@ describe('capturedPieces', () => {
       const board = initializeEmptyBoard()
       const capturedPieces = new Map<Player, Piece[]>()
       const piece: Piece = { type: 'knight', player: 'gote', isPromoted: false }
-      
+
       addCapturedPiece(capturedPieces, 'sente', piece)
-      
+
       // 先手の桂馬を最前線2行（0-1行目）に打とうとする
       const canDrop1 = canDropPiece(board, capturedPieces, 'sente', 'knight', { row: 0, col: 4 })
       const canDrop2 = canDropPiece(board, capturedPieces, 'sente', 'knight', { row: 1, col: 4 })
-      
+
       expect(canDrop1).toBe(false)
       expect(canDrop2).toBe(false)
     })
@@ -146,13 +146,13 @@ describe('capturedPieces', () => {
         { type: 'rook', player: 'gote', isPromoted: false },
         { type: 'pawn', player: 'gote', isPromoted: false }
       ]
-      
-      pieces.forEach(piece => addCapturedPiece(capturedPieces, 'sente', piece))
-      
+
+      pieces.forEach((piece) => addCapturedPiece(capturedPieces, 'sente', piece))
+
       const droppable = getDroppablePieces(capturedPieces, 'sente')
       expect(droppable).toHaveLength(2) // 歩兵2枚、飛車1枚
-      expect(droppable.find(p => p.type === 'pawn')?.count).toBe(2)
-      expect(droppable.find(p => p.type === 'rook')?.count).toBe(1)
+      expect(droppable.find((p) => p.type === 'pawn')?.count).toBe(2)
+      expect(droppable.find((p) => p.type === 'rook')?.count).toBe(1)
     })
   })
 })

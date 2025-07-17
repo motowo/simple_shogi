@@ -38,7 +38,7 @@ export function removeCapturedPiece(
   const pieces = capturedPieces.get(player)
   if (!pieces) return false
 
-  const index = pieces.findIndex(piece => piece.type === pieceType)
+  const index = pieces.findIndex((piece) => piece.type === pieceType)
   if (index === -1) return false
 
   pieces.splice(index, 1)
@@ -48,10 +48,7 @@ export function removeCapturedPiece(
 /**
  * 指定プレイヤーの持ち駒を取得
  */
-export function getCapturedPieces(
-  capturedPieces: Map<Player, Piece[]>,
-  player: Player
-): Piece[] {
+export function getCapturedPieces(capturedPieces: Map<Player, Piece[]>, player: Player): Piece[] {
   return capturedPieces.get(player) || []
 }
 
@@ -77,7 +74,7 @@ export function canDropPiece(
 
   // 持ち駒にその駒があるかチェック
   const pieces = getCapturedPieces(capturedPieces, player)
-  const hasPiece = pieces.some(piece => piece.type === pieceType)
+  const hasPiece = pieces.some((piece) => piece.type === pieceType)
   if (!hasPiece) {
     return false
   }
@@ -145,7 +142,7 @@ export function getDroppablePieces(
   const countMap = new Map<PieceType, number>()
 
   // 駒種別の個数をカウント
-  pieces.forEach(piece => {
+  pieces.forEach((piece) => {
     const current = countMap.get(piece.type) || 0
     countMap.set(piece.type, current + 1)
   })
@@ -162,7 +159,7 @@ export function getDroppablePieces(
  */
 export function sortCapturedPieces(pieces: Piece[]): Piece[] {
   const order: PieceType[] = ['rook', 'bishop', 'gold', 'silver', 'knight', 'lance', 'pawn']
-  
+
   return pieces.sort((a, b) => {
     const aIndex = order.indexOf(a.type)
     const bIndex = order.indexOf(b.type)
@@ -175,20 +172,22 @@ export function sortCapturedPieces(pieces: Piece[]): Piece[] {
  */
 export function formatCapturedPieces(pieces: DroppablePiece[]): string {
   if (pieces.length === 0) return 'なし'
-  
-  return pieces.map(piece => {
-    const names: Record<PieceType, string> = {
-      king: '王',
-      rook: '飛',
-      bishop: '角',
-      gold: '金',
-      silver: '銀',
-      knight: '桂',
-      lance: '香',
-      pawn: '歩'
-    }
-    
-    const name = names[piece.type]
-    return piece.count > 1 ? `${name}${piece.count}` : name
-  }).join(' ')
+
+  return pieces
+    .map((piece) => {
+      const names: Record<PieceType, string> = {
+        king: '王',
+        rook: '飛',
+        bishop: '角',
+        gold: '金',
+        silver: '銀',
+        knight: '桂',
+        lance: '香',
+        pawn: '歩'
+      }
+
+      const name = names[piece.type]
+      return piece.count > 1 ? `${name}${piece.count}` : name
+    })
+    .join(' ')
 }

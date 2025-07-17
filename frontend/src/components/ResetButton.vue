@@ -1,36 +1,17 @@
 <template>
   <div class="reset-button-container">
-    <button
-      class="reset-button"
-      @click="showConfirmation"
-    >
-      局面リセット
-    </button>
+    <button class="reset-button" @click="showConfirmation">局面リセット</button>
 
     <!-- リセット確認ダイアログ -->
     <div v-if="showDialog" class="reset-confirmation-overlay">
       <div class="reset-confirmation">
         <h3 class="confirmation-title">リセット確認</h3>
-        <p class="confirmation-message">
-          局面をリセットしますか？
-        </p>
-        <p class="confirmation-note">
-          現在の局面が失われ、初期配置に戻ります。
-        </p>
-        
+        <p class="confirmation-message">局面をリセットしますか？</p>
+        <p class="confirmation-note">現在の局面が失われ、初期配置に戻ります。</p>
+
         <div class="confirmation-buttons">
-          <button 
-            class="confirm-button confirm-yes"
-            @click="confirmReset"
-          >
-            はい
-          </button>
-          <button 
-            class="confirm-button confirm-no"
-            @click="cancelReset"
-          >
-            いいえ
-          </button>
+          <button class="confirm-button confirm-yes" @click="confirmReset">はい</button>
+          <button class="confirm-button confirm-no" @click="cancelReset">いいえ</button>
         </div>
       </div>
     </div>

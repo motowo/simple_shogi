@@ -113,14 +113,14 @@ export function getPromotedPieceName(piece: Piece): string {
   }
 
   const promotedNames: Record<PieceType, string> = {
-    king: '王',     // 王は成らない
-    rook: '竜',     // 竜王
-    bishop: '馬',   // 竜馬
-    gold: '金',     // 金は成らない
+    king: '王', // 王は成らない
+    rook: '竜', // 竜王
+    bishop: '馬', // 竜馬
+    gold: '金', // 金は成らない
     silver: '成銀',
     knight: '成桂',
     lance: '成香',
-    pawn: 'と'      // と金
+    pawn: 'と' // と金
   }
 
   return promotedNames[piece.type]

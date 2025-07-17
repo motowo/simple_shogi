@@ -1,10 +1,10 @@
 <template>
-  <div 
+  <div
     class="shogi-piece"
     :class="{
-      'sente': piece.player === 'sente',
-      'gote': piece.player === 'gote',
-      'promoted': piece.isPromoted
+      sente: piece.player === 'sente',
+      gote: piece.player === 'gote',
+      promoted: piece.isPromoted
     }"
   >
     <span class="piece-character">{{ displayName }}</span>
