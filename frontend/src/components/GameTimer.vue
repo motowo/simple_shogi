@@ -203,7 +203,7 @@ defineExpose({
 })
 
 onMounted(() => {
-  startGame()
+  // 自動開始しない - 手動でstartGame()を呼び出す必要がある
 })
 
 onUnmounted(() => {
