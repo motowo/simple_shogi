@@ -66,6 +66,7 @@ import type { BoardCell, Position, Player } from '../types/shogi'
 import { ROW_LABELS, COL_LABELS } from '../types/shogi'
 import { formatKifuPosition, isSamePosition } from '../utils/boardUtils'
 import { initializeGameBoard } from '../utils/initialBoard'
+import { getPossibleMoves, isValidMove } from '../utils/moveValidation'
 import ShogiPiece from './ShogiPiece.vue'
 
 // 9x9の将棋盤を初期化
@@ -118,21 +119,8 @@ const selectPiece = (row: number, col: number) => {
   console.log(`Selected piece at ${formatKifuPosition(position)}`)
 }
 
-const calculatePossibleMoves = (position: Position, piece: any) => {
-  const moves: Position[] = []
-  
-  // 簡単な実装：歩兵は前方1マス
-  if (piece.type === 'pawn') {
-    const direction = piece.player === 'sente' ? -1 : 1
-    const newRow = position.row + direction
-    
-    if (newRow >= 0 && newRow < 9) {
-      const targetCell = board.value[newRow][position.col]
-      if (!targetCell.piece) {
-        moves.push({ row: newRow, col: position.col })
-      }
-    }
-  }
+const calculatePossibleMoves = (position: Position, piece: Piece) => {
+  const moves = getPossibleMoves(board.value, position, piece)
   
   // 可能な手をハイライト表示
   moves.forEach(move => {
@@ -169,10 +157,9 @@ const handleCellClick = (row: number, col: number) => {
     return
   }
   
-  // 可能な手の位置をクリックした場合は移動（仮実装）
-  const isPossibleMove = possibleMoves.value.some(move => isSamePosition(move, position))
-  if (isPossibleMove) {
-    // 移動処理（仮実装）
+  // 移動が有効かチェック
+  if (isValidMove(board.value, selectedPosition.value, position)) {
+    // 移動処理
     const selectedCell = board.value[selectedPosition.value.row][selectedPosition.value.col]
     const targetCell = board.value[row][col]
     
