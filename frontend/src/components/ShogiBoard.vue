@@ -73,6 +73,16 @@
       :is-selectable="currentPlayer === 'sente'"
       @piece-click="handleDropPieceSelect"
     />
+    
+    <!-- 成り確認ダイアログ -->
+    <PromotionDialog
+      v-if="promotionPiece"
+      :piece="promotionPiece"
+      :is-visible="showPromotionDialog"
+      :must-promote="mustPromote"
+      @promote="handlePromotionChoice(true)"
+      @no-promote="handlePromotionChoice(false)"
+    />
   </div>
 </template>
 
@@ -89,8 +99,10 @@ import {
   getDroppablePieces as getDroppablePiecesUtil,
   removeCapturedPiece 
 } from '../utils/capturedPieces'
+import { handlePromotion } from '../utils/promotion'
 import ShogiPiece from './ShogiPiece.vue'
 import CapturedPieces from './CapturedPieces.vue'
+import PromotionDialog from './PromotionDialog.vue'
 
 // 9x9の将棋盤を初期化
 const board = ref<BoardCell[][]>([])
@@ -99,6 +111,13 @@ const currentPlayer = ref<Player>('sente')
 const possibleMoves = ref<Position[]>([])
 const capturedPieces = ref<Map<Player, Piece[]>>(new Map())
 const selectedDropPiece = ref<PieceType | null>(null)
+
+// 成り機能関連の状態
+const showPromotionDialog = ref(false)
+const promotionPiece = ref<Piece | null>(null)
+const promotionFrom = ref<Position | null>(null)
+const promotionTo = ref<Position | null>(null)
+const mustPromote = ref(false)
 
 const initializeBoard = () => {
   board.value = initializeGameBoard()
@@ -237,27 +256,62 @@ const handleCellClick = (row: number, col: number) => {
   
   // 移動が有効かチェック
   if (isValidMove(board.value, selectedPosition.value, position)) {
-    // 移動処理
+    // 成り判定
     const selectedCell = board.value[selectedPosition.value.row][selectedPosition.value.col]
     const targetCell = board.value[row][col]
+    const movingPiece = selectedCell.piece!
     
-    // 駒を取る場合は持ち駒に追加
-    if (targetCell.piece) {
-      addCapturedPiece(capturedPieces.value, currentPlayer.value, targetCell.piece)
+    const promotionResult = handlePromotion(movingPiece, selectedPosition.value, position)
+    
+    if (promotionResult.canPromote && !promotionResult.mustPromote) {
+      // 成り選択ダイアログを表示
+      promotionPiece.value = movingPiece
+      promotionFrom.value = selectedPosition.value
+      promotionTo.value = position
+      mustPromote.value = promotionResult.mustPromote
+      showPromotionDialog.value = true
+    } else {
+      // 移動処理を実行
+      executeMove(selectedPosition.value, position, promotionResult.piece, targetCell.piece)
     }
-    
-    targetCell.piece = selectedCell.piece
-    selectedCell.piece = null
-    
-    // 手番を交代
-    currentPlayer.value = currentPlayer.value === 'sente' ? 'gote' : 'sente'
-    
-    clearSelection()
-    console.log(`Moved to ${kifuPosition}`)
   } else {
     // 移動できない場合は選択解除
     clearSelection()
   }
+}
+
+const executeMove = (from: Position, to: Position, piece: Piece, capturedPiece: Piece | null) => {
+  // 駒を取る場合は持ち駒に追加
+  if (capturedPiece) {
+    addCapturedPiece(capturedPieces.value, currentPlayer.value, capturedPiece)
+  }
+  
+  // 移動実行
+  board.value[to.row][to.col].piece = piece
+  board.value[from.row][from.col].piece = null
+  
+  // 手番を交代
+  currentPlayer.value = currentPlayer.value === 'sente' ? 'gote' : 'sente'
+  
+  clearSelection()
+  console.log(`Moved to ${formatKifuPosition(to)}`)
+}
+
+const handlePromotionChoice = (promote: boolean) => {
+  showPromotionDialog.value = false
+  
+  if (promotionPiece.value && promotionFrom.value && promotionTo.value) {
+    const targetCell = board.value[promotionTo.value.row][promotionTo.value.col]
+    const finalPiece = promote ? handlePromotion(promotionPiece.value, promotionFrom.value, promotionTo.value, true).piece : promotionPiece.value
+    
+    executeMove(promotionFrom.value, promotionTo.value, finalPiece, targetCell.piece)
+  }
+  
+  // 成り関連の状態をリセット
+  promotionPiece.value = null
+  promotionFrom.value = null
+  promotionTo.value = null
+  mustPromote.value = false
 }
 
 // コンポーネントマウント時に盤面を初期化

@@ -87,6 +87,24 @@ export function getPieceDisplayName(piece: Piece): string {
 }
 
 /**
+ * 駒の種類のみから日本語表記を取得する
+ */
+export function getPieceTypeDisplayName(pieceType: PieceType): string {
+  const pieceNames: Record<PieceType, string> = {
+    king: '王',
+    rook: '飛',
+    bishop: '角',
+    gold: '金',
+    silver: '銀',
+    knight: '桂',
+    lance: '香',
+    pawn: '歩'
+  }
+  
+  return pieceNames[pieceType]
+}
+
+/**
  * 駒が成ることができるかチェックする
  */
 export function canPromote(piece: Piece): boolean {
