@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { 
-  isKingInCheck, 
-  findKingPosition, 
+import {
+  isKingInCheck,
+  findKingPosition,
   getAttackingPieces,
   wouldBeInCheckAfterMove,
   isCheckmate
@@ -32,7 +32,7 @@ describe('checkDetection', () => {
       const board = initializeEmptyBoard()
       const senteKing: Piece = { type: 'king', player: 'sente', isPromoted: false }
       const goteRook: Piece = { type: 'rook', player: 'gote', isPromoted: false }
-      
+
       board[8][4].piece = senteKing
       board[0][4].piece = goteRook
 
@@ -43,7 +43,7 @@ describe('checkDetection', () => {
       const board = initializeEmptyBoard()
       const senteKing: Piece = { type: 'king', player: 'sente', isPromoted: false }
       const goteBishop: Piece = { type: 'bishop', player: 'gote', isPromoted: false }
-      
+
       board[4][4].piece = senteKing
       board[0][0].piece = goteBishop
 
@@ -54,7 +54,7 @@ describe('checkDetection', () => {
       const board = initializeEmptyBoard()
       const senteKing: Piece = { type: 'king', player: 'sente', isPromoted: false }
       const gotePawn: Piece = { type: 'pawn', player: 'gote', isPromoted: false }
-      
+
       board[4][4].piece = senteKing
       board[5][4].piece = gotePawn // 後手の歩は下向きなので王手
 
@@ -65,7 +65,7 @@ describe('checkDetection', () => {
       const board = initializeEmptyBoard()
       const senteKing: Piece = { type: 'king', player: 'sente', isPromoted: false }
       const goteKnight: Piece = { type: 'knight', player: 'gote', isPromoted: false }
-      
+
       board[4][4].piece = senteKing
       board[2][3].piece = goteKnight // 後手の桂馬から王手
 
@@ -76,7 +76,7 @@ describe('checkDetection', () => {
       const board = initializeEmptyBoard()
       const senteKing: Piece = { type: 'king', player: 'sente', isPromoted: false }
       const gotePawn: Piece = { type: 'pawn', player: 'gote', isPromoted: false }
-      
+
       board[8][4].piece = senteKing
       board[2][7].piece = gotePawn // 王手になっていない位置
 
@@ -88,7 +88,7 @@ describe('checkDetection', () => {
       const senteKing: Piece = { type: 'king', player: 'sente', isPromoted: false }
       const goteRook: Piece = { type: 'rook', player: 'gote', isPromoted: false }
       const sentePawn: Piece = { type: 'pawn', player: 'sente', isPromoted: false }
-      
+
       board[8][4].piece = senteKing
       board[0][4].piece = goteRook
       board[4][4].piece = sentePawn // 飛車の攻撃をブロック
@@ -103,15 +103,15 @@ describe('checkDetection', () => {
       const senteKing: Piece = { type: 'king', player: 'sente', isPromoted: false }
       const goteRook: Piece = { type: 'rook', player: 'gote', isPromoted: false }
       const goteBishop: Piece = { type: 'bishop', player: 'gote', isPromoted: false }
-      
+
       board[4][4].piece = senteKing
-      board[0][4].piece = goteRook  // 縦の王手
+      board[0][4].piece = goteRook // 縦の王手
       board[0][0].piece = goteBishop // 斜めの王手
 
       const attackers = getAttackingPieces(board, 'sente')
       expect(attackers).toHaveLength(2)
-      expect(attackers.some(a => a.position.row === 0 && a.position.col === 4)).toBe(true)
-      expect(attackers.some(a => a.position.row === 0 && a.position.col === 0)).toBe(true)
+      expect(attackers.some((a) => a.position.row === 0 && a.position.col === 4)).toBe(true)
+      expect(attackers.some((a) => a.position.row === 0 && a.position.col === 0)).toBe(true)
     })
   })
 
@@ -120,7 +120,7 @@ describe('checkDetection', () => {
       const board = initializeEmptyBoard()
       const senteKing: Piece = { type: 'king', player: 'sente', isPromoted: false }
       const goteRook: Piece = { type: 'rook', player: 'gote', isPromoted: false }
-      
+
       board[8][4].piece = senteKing
       board[7][5].piece = goteRook
 
@@ -135,7 +135,7 @@ describe('checkDetection', () => {
       const senteKing: Piece = { type: 'king', player: 'sente', isPromoted: false }
       const senteSilver: Piece = { type: 'silver', player: 'sente', isPromoted: false }
       const goteRook: Piece = { type: 'rook', player: 'gote', isPromoted: false }
-      
+
       board[8][4].piece = senteKing
       board[7][4].piece = senteSilver // 王を守っている
       board[0][4].piece = goteRook
@@ -150,7 +150,7 @@ describe('checkDetection', () => {
       const board = initializeEmptyBoard()
       const senteKing: Piece = { type: 'king', player: 'sente', isPromoted: false }
       const sentePawn: Piece = { type: 'pawn', player: 'sente', isPromoted: false }
-      
+
       board[8][4].piece = senteKing
       board[6][0].piece = sentePawn
 
@@ -167,7 +167,7 @@ describe('checkDetection', () => {
       const senteKing: Piece = { type: 'king', player: 'sente', isPromoted: false }
       const goteRook1: Piece = { type: 'rook', player: 'gote', isPromoted: false }
       const goteRook2: Piece = { type: 'rook', player: 'gote', isPromoted: false }
-      
+
       // 王を端に追い詰める
       board[8][8].piece = senteKing
       board[7][8].piece = goteRook1 // 横から王手
@@ -180,7 +180,7 @@ describe('checkDetection', () => {
       const board = initializeEmptyBoard()
       const senteKing: Piece = { type: 'king', player: 'sente', isPromoted: false }
       const goteRook: Piece = { type: 'rook', player: 'gote', isPromoted: false }
-      
+
       board[4][4].piece = senteKing
       board[0][4].piece = goteRook // 王手
 
@@ -192,7 +192,7 @@ describe('checkDetection', () => {
       const senteKing: Piece = { type: 'king', player: 'sente', isPromoted: false }
       const senteSilver: Piece = { type: 'silver', player: 'sente', isPromoted: false }
       const goteRook: Piece = { type: 'rook', player: 'gote', isPromoted: false }
-      
+
       board[8][4].piece = senteKing
       board[7][3].piece = senteSilver
       board[0][4].piece = goteRook // 王手
@@ -205,7 +205,7 @@ describe('checkDetection', () => {
       const senteKing: Piece = { type: 'king', player: 'sente', isPromoted: false }
       const senteBishop: Piece = { type: 'bishop', player: 'sente', isPromoted: false }
       const gotePawn: Piece = { type: 'pawn', player: 'gote', isPromoted: false }
-      
+
       board[8][4].piece = senteKing
       board[6][2].piece = senteBishop
       board[7][4].piece = gotePawn // 王手
@@ -216,7 +216,7 @@ describe('checkDetection', () => {
     it('returns false when not in check', () => {
       const board = initializeEmptyBoard()
       const senteKing: Piece = { type: 'king', player: 'sente', isPromoted: false }
-      
+
       board[8][4].piece = senteKing
 
       expect(isCheckmate(board, 'sente')).toBe(false)

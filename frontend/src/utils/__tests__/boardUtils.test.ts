@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { 
-  initializeEmptyBoard, 
-  isValidPosition, 
-  isSamePosition, 
-  parseKifuPosition, 
-  formatKifuPosition 
+import {
+  initializeEmptyBoard,
+  isValidPosition,
+  isSamePosition,
+  parseKifuPosition,
+  formatKifuPosition
 } from '../boardUtils'
 
 describe('boardUtils', () => {
@@ -12,15 +12,15 @@ describe('boardUtils', () => {
     it('creates a 9x9 board', () => {
       const board = initializeEmptyBoard()
       expect(board).toHaveLength(9)
-      board.forEach(row => {
+      board.forEach((row) => {
         expect(row).toHaveLength(9)
       })
     })
 
     it('initializes all cells with null pieces', () => {
       const board = initializeEmptyBoard()
-      board.forEach(row => {
-        row.forEach(cell => {
+      board.forEach((row) => {
+        row.forEach((cell) => {
           expect(cell.piece).toBeNull()
           expect(cell.isHighlighted).toBe(false)
           expect(cell.isSelected).toBe(false)

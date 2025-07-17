@@ -2,9 +2,7 @@
   <div class="move-history">
     <h3 class="history-title">手順</h3>
     <div class="history-content">
-      <div v-if="moves.length === 0" class="no-moves">
-        まだ手が指されていません
-      </div>
+      <div v-if="moves.length === 0" class="no-moves">まだ手が指されていません</div>
       <div v-else class="moves-list">
         <div
           v-for="(move, index) in moves"
@@ -36,17 +34,17 @@ const formatMove = (move: Move) => {
   const pieceChar = getPieceDisplayName(move.piece)
   const fromPos = formatKifuPosition(move.from)
   const toPos = formatKifuPosition(move.to)
-  
+
   let moveText = `${pieceChar}${fromPos}-${toPos}`
-  
+
   if (move.capturedPiece) {
     moveText += '取'
   }
-  
+
   if (move.isPromotion) {
     moveText += '成'
   }
-  
+
   return moveText
 }
 </script>

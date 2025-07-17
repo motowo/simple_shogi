@@ -8,7 +8,7 @@ describe('moveValidation', () => {
     it('allows valid pawn moves', () => {
       const board = initializeGameBoard()
       const from: Position = { row: 6, col: 4 } // 先手の歩兵
-      const to: Position = { row: 5, col: 4 }   // 1マス前
+      const to: Position = { row: 5, col: 4 } // 1マス前
 
       const result = isValidMove(board, from, to)
       expect(result).toBe(true)
@@ -17,7 +17,7 @@ describe('moveValidation', () => {
     it('prevents invalid pawn moves', () => {
       const board = initializeGameBoard()
       const from: Position = { row: 6, col: 4 } // 先手の歩兵
-      const to: Position = { row: 4, col: 4 }   // 2マス前（無効）
+      const to: Position = { row: 4, col: 4 } // 2マス前（無効）
 
       const result = isValidMove(board, from, to)
       expect(result).toBe(false)
@@ -26,7 +26,7 @@ describe('moveValidation', () => {
     it('prevents moving to occupied squares with own pieces', () => {
       const board = initializeGameBoard()
       const from: Position = { row: 8, col: 4 } // 先手の王
-      const to: Position = { row: 7, col: 4 }   // 先手の飛車がいる位置
+      const to: Position = { row: 7, col: 4 } // 先手の飛車がいる位置
 
       const result = isValidMove(board, from, to)
       expect(result).toBe(false)
@@ -40,7 +40,7 @@ describe('moveValidation', () => {
       board[3][4].piece = piece
 
       const from: Position = { row: 3, col: 4 }
-      const to: Position = { row: 2, col: 4 }   // 後手の歩兵を取る
+      const to: Position = { row: 2, col: 4 } // 後手の歩兵を取る
 
       const result = isValidMove(board, from, to)
       expect(result).toBe(true)
@@ -49,7 +49,7 @@ describe('moveValidation', () => {
     it('prevents moves outside the board', () => {
       const board = initializeGameBoard()
       const from: Position = { row: 0, col: 4 } // 後手の王
-      const to: Position = { row: -1, col: 4 }  // 盤外
+      const to: Position = { row: -1, col: 4 } // 盤外
 
       const result = isValidMove(board, from, to)
       expect(result).toBe(false)

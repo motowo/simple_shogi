@@ -11,7 +11,7 @@ describe('CapturedPieces', () => {
         droppablePieces: []
       }
     })
-    
+
     expect(wrapper.find('.title').text()).toBe('先手の持ち駒')
   })
 
@@ -22,7 +22,7 @@ describe('CapturedPieces', () => {
         droppablePieces: []
       }
     })
-    
+
     expect(wrapper.find('.title').text()).toBe('後手の持ち駒')
   })
 
@@ -33,7 +33,7 @@ describe('CapturedPieces', () => {
         droppablePieces: []
       }
     })
-    
+
     expect(wrapper.find('.no-pieces').text()).toBe('なし')
   })
 
@@ -42,22 +42,22 @@ describe('CapturedPieces', () => {
       { type: 'pawn', count: 2 },
       { type: 'rook', count: 1 }
     ]
-    
+
     const wrapper = mount(CapturedPieces, {
       props: {
         player: 'sente',
         droppablePieces
       }
     })
-    
+
     const pieces = wrapper.findAll('.piece-item')
     expect(pieces).toHaveLength(2)
-    
+
     // 歩兵の表示確認
     const pawnPiece = pieces[0]
     expect(pawnPiece.find('.piece-character').text()).toBe('歩')
     expect(pawnPiece.find('.piece-count').text()).toBe('2')
-    
+
     // 飛車の表示確認
     const rookPiece = pieces[1]
     expect(rookPiece.find('.piece-character').text()).toBe('飛')
@@ -65,10 +65,8 @@ describe('CapturedPieces', () => {
   })
 
   it('emits pieceClick event when piece is clicked and selectable', async () => {
-    const droppablePieces: DroppablePiece[] = [
-      { type: 'pawn', count: 1 }
-    ]
-    
+    const droppablePieces: DroppablePiece[] = [{ type: 'pawn', count: 1 }]
+
     const wrapper = mount(CapturedPieces, {
       props: {
         player: 'sente',
@@ -76,19 +74,17 @@ describe('CapturedPieces', () => {
         isSelectable: true
       }
     })
-    
+
     const piece = wrapper.find('.piece-item')
     await piece.trigger('click')
-    
+
     expect(wrapper.emitted('pieceClick')).toHaveLength(1)
     expect(wrapper.emitted('pieceClick')![0]).toEqual(['pawn'])
   })
 
   it('does not emit pieceClick event when not selectable', async () => {
-    const droppablePieces: DroppablePiece[] = [
-      { type: 'pawn', count: 1 }
-    ]
-    
+    const droppablePieces: DroppablePiece[] = [{ type: 'pawn', count: 1 }]
+
     const wrapper = mount(CapturedPieces, {
       props: {
         player: 'sente',
@@ -96,18 +92,16 @@ describe('CapturedPieces', () => {
         isSelectable: false
       }
     })
-    
+
     const piece = wrapper.find('.piece-item')
     await piece.trigger('click')
-    
+
     expect(wrapper.emitted('pieceClick')).toBeUndefined()
   })
 
   it('applies selectable class when isSelectable is true', () => {
-    const droppablePieces: DroppablePiece[] = [
-      { type: 'pawn', count: 1 }
-    ]
-    
+    const droppablePieces: DroppablePiece[] = [{ type: 'pawn', count: 1 }]
+
     const wrapper = mount(CapturedPieces, {
       props: {
         player: 'sente',
@@ -115,16 +109,14 @@ describe('CapturedPieces', () => {
         isSelectable: true
       }
     })
-    
+
     const piece = wrapper.find('.piece-item')
     expect(piece.classes()).toContain('selectable')
   })
 
   it('does not apply selectable class when isSelectable is false', () => {
-    const droppablePieces: DroppablePiece[] = [
-      { type: 'pawn', count: 1 }
-    ]
-    
+    const droppablePieces: DroppablePiece[] = [{ type: 'pawn', count: 1 }]
+
     const wrapper = mount(CapturedPieces, {
       props: {
         player: 'sente',
@@ -132,7 +124,7 @@ describe('CapturedPieces', () => {
         isSelectable: false
       }
     })
-    
+
     const piece = wrapper.find('.piece-item')
     expect(piece.classes()).not.toContain('selectable')
   })

@@ -2,7 +2,7 @@
   <div v-if="isVisible" class="promotion-dialog-overlay">
     <div class="promotion-dialog">
       <h3 class="dialog-title">成り駒にしますか？</h3>
-      
+
       <div class="pieces-comparison">
         <div class="piece-option">
           <div class="piece-label">現在の駒</div>
@@ -11,9 +11,9 @@
           </div>
           <div class="piece-name">{{ getPieceDisplayName(piece) }}</div>
         </div>
-        
+
         <div class="arrow">→</div>
-        
+
         <div class="piece-option">
           <div class="piece-label">成り駒</div>
           <div class="piece-display">
@@ -22,15 +22,10 @@
           <div class="piece-name">{{ getPieceDisplayName(promotedPiece) }}</div>
         </div>
       </div>
-      
+
       <div class="dialog-actions">
-        <button 
-          class="action-button promote-button"
-          @click="handlePromote"
-        >
-          成る
-        </button>
-        <button 
+        <button class="action-button promote-button" @click="handlePromote">成る</button>
+        <button
           v-if="!mustPromote"
           class="action-button no-promote-button"
           @click="handleNoPromote"
@@ -38,10 +33,8 @@
           成らない
         </button>
       </div>
-      
-      <div v-if="mustPromote" class="force-promote-message">
-        この駒は成る必要があります
-      </div>
+
+      <div v-if="mustPromote" class="force-promote-message">この駒は成る必要があります</div>
     </div>
   </div>
 </template>

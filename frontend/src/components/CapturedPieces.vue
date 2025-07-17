@@ -6,7 +6,7 @@
         v-for="piece in droppablePieces"
         :key="piece.type"
         class="piece-item"
-        :class="{ 'selectable': isSelectable }"
+        :class="{ selectable: isSelectable }"
         @click="handlePieceClick(piece.type)"
       >
         <div class="piece-display">
@@ -14,9 +14,7 @@
           <span v-if="piece.count > 1" class="piece-count">{{ piece.count }}</span>
         </div>
       </div>
-      <div v-if="droppablePieces.length === 0" class="no-pieces">
-        なし
-      </div>
+      <div v-if="droppablePieces.length === 0" class="no-pieces">なし</div>
     </div>
   </div>
 </template>
@@ -134,7 +132,7 @@ const handlePieceClick = (pieceType: PieceType) => {
 }
 
 /* 後手の持ち駒は上下反転 */
-.captured-pieces[data-player="gote"] .piece-display {
+.captured-pieces[data-player='gote'] .piece-display {
   transform: rotate(180deg);
 }
 </style>

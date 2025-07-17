@@ -14,7 +14,7 @@ describe('ResetButton', () => {
     const wrapper = mount(ResetButton)
 
     await wrapper.find('.reset-button').trigger('click')
-    
+
     expect(wrapper.find('.reset-confirmation').exists()).toBe(true)
     expect(wrapper.find('.confirmation-message').text()).toContain('局面をリセットしますか？')
   })
@@ -24,10 +24,10 @@ describe('ResetButton', () => {
 
     // リセットボタンをクリック
     await wrapper.find('.reset-button').trigger('click')
-    
+
     // 確認ダイアログで「はい」をクリック
     await wrapper.find('.confirm-yes').trigger('click')
-    
+
     expect(wrapper.emitted('reset')).toHaveLength(1)
   })
 
@@ -36,10 +36,10 @@ describe('ResetButton', () => {
 
     // リセットボタンをクリック
     await wrapper.find('.reset-button').trigger('click')
-    
+
     // 確認ダイアログで「いいえ」をクリック
     await wrapper.find('.confirm-no').trigger('click')
-    
+
     expect(wrapper.emitted('reset')).toBeUndefined()
   })
 
@@ -49,7 +49,7 @@ describe('ResetButton', () => {
     // リセットボタンをクリック
     await wrapper.find('.reset-button').trigger('click')
     expect(wrapper.find('.reset-confirmation').exists()).toBe(true)
-    
+
     // 確認ダイアログで「いいえ」をクリック
     await wrapper.find('.confirm-no').trigger('click')
     expect(wrapper.find('.reset-confirmation').exists()).toBe(false)
@@ -61,7 +61,7 @@ describe('ResetButton', () => {
     // リセットボタンをクリック
     await wrapper.find('.reset-button').trigger('click')
     expect(wrapper.find('.reset-confirmation').exists()).toBe(true)
-    
+
     // 確認ダイアログで「はい」をクリック
     await wrapper.find('.confirm-yes').trigger('click')
     expect(wrapper.find('.reset-confirmation').exists()).toBe(false)
@@ -71,7 +71,7 @@ describe('ResetButton', () => {
     const wrapper = mount(ResetButton)
 
     await wrapper.find('.reset-button').trigger('click')
-    
+
     const message = wrapper.find('.confirmation-note').text()
     expect(message).toContain('現在の局面が失われます')
   })
