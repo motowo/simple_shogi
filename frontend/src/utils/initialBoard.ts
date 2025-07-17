@@ -36,8 +36,8 @@ export function initializeGameBoard(): BoardCell[][] {
   })
 
   // 二段目：飛車と角
-  board[1][1].piece = createPiece('bishop', 'gote') // 角
-  board[1][7].piece = createPiece('rook', 'gote') // 飛車
+  board[1][7].piece = createPiece('bishop', 'gote') // 角
+  board[1][1].piece = createPiece('rook', 'gote') // 飛車
 
   // 三段目：歩兵
   for (let col = 0; col < 9; col++) {
@@ -51,8 +51,8 @@ export function initializeGameBoard(): BoardCell[][] {
   }
 
   // 八段目：飛車と角
-  board[7][7].piece = createPiece('bishop', 'sente') // 角
-  board[7][1].piece = createPiece('rook', 'sente') // 飛車
+  board[7][1].piece = createPiece('bishop', 'sente') // 角
+  board[7][7].piece = createPiece('rook', 'sente') // 飛車
 
   // 九段目：香桂銀金王金銀桂香
   const senteBackRow: PieceType[] = [

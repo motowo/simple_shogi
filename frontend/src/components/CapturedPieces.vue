@@ -10,9 +10,10 @@
         @click="handlePieceClick(piece.type)"
       >
         <div class="piece-display">
-          <span class="piece-character">{{ getPieceDisplayName(piece.type) }}</span>
+          <span class="piece-character">{{ getPieceTypeDisplayName(piece.type) }}</span>
           <span v-if="piece.count > 1" class="piece-count">{{ piece.count }}</span>
         </div>
+        <div class="piece-name">{{ getPieceTypeName(piece.type) }}</div>
       </div>
       <div v-if="droppablePieces.length === 0" class="no-pieces">なし</div>
     </div>
@@ -23,7 +24,7 @@
 import { computed } from 'vue'
 import type { Player, PieceType } from '../types/shogi'
 import type { DroppablePiece } from '../utils/capturedPieces'
-import { getPieceDisplayName } from '../utils/initialBoard'
+import { getPieceTypeDisplayName } from '../utils/initialBoard'
 
 interface Props {
   player: Player
@@ -45,6 +46,20 @@ const handlePieceClick = (pieceType: PieceType) => {
   if (props.isSelectable) {
     emit('pieceClick', pieceType)
   }
+}
+
+const getPieceTypeName = (pieceType: PieceType): string => {
+  const names: Record<PieceType, string> = {
+    pawn: '歩',
+    lance: '香',
+    knight: '桂',
+    silver: '銀',
+    gold: '金',
+    bishop: '角',
+    rook: '飛',
+    king: '王'
+  }
+  return names[pieceType]
 }
 </script>
 
@@ -69,15 +84,20 @@ const handlePieceClick = (pieceType: PieceType) => {
 .pieces-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  min-height: 50px;
-  align-items: center;
+  gap: 12px;
+  min-height: 70px;
+  align-items: flex-start;
+  justify-content: center;
 }
 
 .piece-item {
   position: relative;
   cursor: default;
   transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
 .piece-item.selectable {
@@ -121,6 +141,14 @@ const handlePieceClick = (pieceType: PieceType) => {
   justify-content: center;
   font-size: 10px;
   font-weight: bold;
+}
+
+.piece-name {
+  font-size: 12px;
+  color: #8b4513;
+  font-weight: bold;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .no-pieces {

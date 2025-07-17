@@ -1,13 +1,5 @@
 <template>
   <div class="shogi-board-container">
-    <!-- 後手の持ち駒 -->
-    <CapturedPieces
-      player="gote"
-      :droppable-pieces="getDroppablePieces(capturedPieces, 'gote')"
-      :is-selectable="currentPlayer === 'gote'"
-      @piece-click="handleDropPieceSelect"
-    />
-
     <!-- 現在のプレイヤー表示 -->
     <div class="current-player" :class="{ 'in-check': isInCheck }">
       現在の手番: {{ currentPlayer === 'sente' ? '先手' : '後手' }}
@@ -32,56 +24,71 @@
       <ResetButton @reset="resetGame" />
     </div>
 
-    <!-- 列ラベル（上部） -->
-    <div class="col-labels">
-      <div class="corner-spacer"></div>
-      <div v-for="(label, index) in COL_LABELS" :key="`col-${index}`" class="col-label">
-        {{ label }}
+    <!-- メインゲームエリア（盤面と左右の持ち駒、右側の手順） -->
+    <div class="main-game-area">
+      <!-- 左側の持ち駒エリア（後手） -->
+      <div class="side-captured-pieces left-side">
+        <CapturedPieces
+          player="gote"
+          :droppable-pieces="getDroppablePieces(capturedPieces, 'gote')"
+          :is-selectable="currentPlayer === 'gote'"
+          @piece-click="handleDropPieceSelect"
+        />
       </div>
-    </div>
 
-    <!-- 盤面とサイドラベル -->
-    <div class="board-with-labels">
-      <!-- 行ラベル（左側） -->
-      <div class="row-labels">
-        <div v-for="(label, index) in ROW_LABELS" :key="`row-${index}`" class="row-label">
-          {{ label }}
+      <!-- 中央の盤面エリア -->
+      <div class="board-area">
+        <!-- 列ラベル（上部） -->
+        <div class="col-labels">
+          <div class="corner-spacer"></div>
+          <div v-for="(label, index) in COL_LABELS" :key="`col-${index}`" class="col-label">
+            {{ label }}
+          </div>
         </div>
-      </div>
 
-      <!-- 将棋盤 -->
-      <div class="shogi-board">
-        <div v-for="(row, rowIndex) in board" :key="`row-${rowIndex}`" class="board-row">
-          <div
-            v-for="(cell, colIndex) in row"
-            :key="`cell-${rowIndex}-${colIndex}`"
-            class="board-cell"
-            :data-row="rowIndex"
-            :data-col="colIndex"
-            :class="{
-              highlighted: cell.isHighlighted,
-              selected: cell.isSelected
-            }"
-            @click="handleCellClick(rowIndex, colIndex)"
-          >
-            <ShogiPiece v-if="cell.piece" :piece="cell.piece" />
+        <!-- 盤面とサイドラベル -->
+        <div class="board-with-labels">
+          <!-- 行ラベル（左側） -->
+          <div class="row-labels">
+            <div v-for="(label, index) in ROW_LABELS" :key="`row-${index}`" class="row-label">
+              {{ label }}
+            </div>
+          </div>
+
+          <!-- 将棋盤 -->
+          <div class="shogi-board">
+            <div v-for="(row, rowIndex) in board" :key="`row-${rowIndex}`" class="board-row">
+              <div
+                v-for="(cell, colIndex) in row"
+                :key="`cell-${rowIndex}-${colIndex}`"
+                class="board-cell"
+                :data-row="rowIndex"
+                :data-col="colIndex"
+                :class="{
+                  highlighted: cell.isHighlighted,
+                  selected: cell.isSelected
+                }"
+                @click="handleCellClick(rowIndex, colIndex)"
+              >
+                <ShogiPiece v-if="cell.piece" :piece="cell.piece" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- ゲームエリア -->
-    <div class="game-area">
-      <!-- 先手の持ち駒 -->
-      <CapturedPieces
-        player="sente"
-        :droppable-pieces="getDroppablePieces(capturedPieces, 'sente')"
-        :is-selectable="currentPlayer === 'sente'"
-        @piece-click="handleDropPieceSelect"
-      />
+      <!-- 右側のエリア（先手の持ち駒と手順） -->
+      <div class="right-side-area">
+        <!-- 先手の持ち駒 -->
+        <div class="side-captured-pieces right-side">
+          <CapturedPieces
+            player="sente"
+            :droppable-pieces="getDroppablePieces(capturedPieces, 'sente')"
+            :is-selectable="currentPlayer === 'sente'"
+            @piece-click="handleDropPieceSelect"
+          />
+        </div>
 
-      <!-- 右側エリア -->
-      <div class="right-area">
         <!-- 対局時間 -->
         <GameTimer ref="gameTimer" :current-player="currentPlayer" :is-game-over="isGameOver" />
 
@@ -118,6 +125,7 @@
         </div>
       </div>
     </div>
+
 
     <!-- 成り確認ダイアログ -->
     <PromotionDialog
@@ -638,12 +646,49 @@ onUnmounted(() => {
   border-radius: 8px;
 }
 
-.game-area {
+/* 新しいレイアウト用スタイル */
+.main-game-area {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
   gap: 20px;
-  margin-top: 16px;
+  margin: 16px 0;
+  justify-content: center;
+}
+
+.board-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.side-captured-pieces {
+  width: 180px;
+  min-height: 450px;
+}
+
+.left-side {
+  /* 後手の持ち駒（左側） */
+}
+
+.right-side-area {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 250px;
+}
+
+.right-side {
+  /* 先手の持ち駒（右側上部） */
+}
+
+.move-history-area {
+  flex: 1;
+  padding: 16px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  min-height: 200px;
 }
 
 .right-area {
@@ -651,6 +696,52 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 16px;
   min-width: 250px;
+}
+
+/* タブコンテナのスタイル */
+.tab-container {
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tab-buttons {
+  display: flex;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #ddd;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 8px 16px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.tab-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.tab-button.active {
+  background-color: white;
+  color: #8b4513;
+  border-bottom: 2px solid #8b4513;
+}
+
+.tab-content {
+  flex: 1;
+  min-height: 300px;
+}
+
+.tab-pane {
+  height: 100%;
 }
 
 .col-labels {
@@ -747,14 +838,48 @@ onUnmounted(() => {
 }
 
 /* レスポンシブデザイン */
+@media (max-width: 1024px) {
+  .main-game-area {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .side-captured-pieces {
+    width: 100%;
+    min-height: auto;
+  }
+
+  .right-side-area {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .move-history-area {
+    max-height: 300px;
+    min-height: 150px;
+  }
+}
+
 @media (max-width: 768px) {
   .shogi-board-container {
     padding: 10px;
   }
 
-  .game-area {
+  .main-game-area {
     flex-direction: column;
     align-items: center;
+  }
+
+  .side-captured-pieces {
+    width: 100%;
+    min-height: auto;
+  }
+
+  .right-side-area {
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
   }
 
   .right-area {
@@ -779,6 +904,11 @@ onUnmounted(() => {
 
   .current-player {
     font-size: 16px;
+  }
+
+  .move-history-area {
+    max-height: 200px;
+    min-height: 100px;
   }
 }
 

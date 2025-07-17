@@ -57,16 +57,16 @@ describe('initializeGameBoard', () => {
   it('places sente pieces in correct positions', () => {
     const board = initializeGameBoard()
 
-    // 先手の飛車
+    // 先手の角
     expect(board[7][1].piece).toEqual({
-      type: 'rook',
+      type: 'bishop',
       player: 'sente',
       isPromoted: false
     })
 
-    // 先手の角
+    // 先手の飛車
     expect(board[7][7].piece).toEqual({
-      type: 'bishop',
+      type: 'rook',
       player: 'sente',
       isPromoted: false
     })
@@ -96,20 +96,19 @@ describe('initializeGameBoard', () => {
       isPromoted: false
     })
 
-    // 後手の飛車
-    expect(board[1][7].piece).toEqual({
-      type: 'rook',
-      player: 'gote',
-      isPromoted: false
-    })
-
     // 後手の角
-    expect(board[1][1].piece).toEqual({
+    expect(board[1][7].piece).toEqual({
       type: 'bishop',
       player: 'gote',
       isPromoted: false
     })
 
+    // 後手の飛車
+    expect(board[1][1].piece).toEqual({
+      type: 'rook',
+      player: 'gote',
+      isPromoted: false
+    })
     // 後手の歩兵
     for (let col = 0; col < 9; col++) {
       expect(board[2][col].piece).toEqual({

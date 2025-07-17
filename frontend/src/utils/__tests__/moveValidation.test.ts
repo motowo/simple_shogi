@@ -26,7 +26,7 @@ describe('moveValidation', () => {
     it('prevents moving to occupied squares with own pieces', () => {
       const board = initializeGameBoard()
       const from: Position = { row: 8, col: 4 } // 先手の王
-      const to: Position = { row: 7, col: 4 } // 先手の飛車がいる位置
+      const to: Position = { row: 8, col: 3 } // 先手の金がいる位置
 
       const result = isValidMove(board, from, to)
       expect(result).toBe(false)
@@ -96,9 +96,11 @@ describe('moveValidation', () => {
       const piece = board[position.row][position.col].piece!
 
       const moves = getPossibleMoves(board, position, piece)
-      // 王は8方向に1マスずつ移動可能だが、初期配置では上の1マスのみ
-      expect(moves).toHaveLength(1)
-      expect(moves[0]).toEqual({ row: 7, col: 4 })
+      // 王は8方向に1マスずつ移動可能だが、初期配置では上、左上、右上の3マス
+      expect(moves).toHaveLength(3)
+      expect(moves).toContainEqual({ row: 7, col: 4 }) // 上
+      expect(moves).toContainEqual({ row: 7, col: 3 }) // 左上
+      expect(moves).toContainEqual({ row: 7, col: 5 }) // 右上
     })
   })
 })
