@@ -83,8 +83,8 @@ export function wouldBeInCheckAfterMove(
   player: Player
 ): boolean {
   // ボードのコピーを作成
-  const tempBoard = board.map(row => 
-    row.map(cell => ({
+  const tempBoard = board.map((row) =>
+    row.map((cell) => ({
       ...cell,
       piece: cell.piece ? { ...cell.piece } : null
     }))
@@ -111,8 +111,8 @@ export function wouldBeInCheckAfterDrop(
   player: Player
 ): boolean {
   // ボードのコピーを作成
-  const tempBoard = board.map(row => 
-    row.map(cell => ({
+  const tempBoard = board.map((row) =>
+    row.map((cell) => ({
       ...cell,
       piece: cell.piece ? { ...cell.piece } : null
     }))
@@ -141,7 +141,7 @@ export function isCheckmate(board: BoardCell[][], player: Player): boolean {
   // 1. 王が逃げられるかチェック
   const kingPiece = board[kingPosition.row][kingPosition.col].piece!
   const kingMoves = getPossibleMoves(board, kingPosition, kingPiece)
-  
+
   for (const move of kingMoves) {
     if (!wouldBeInCheckAfterMove(board, kingPosition, move, player)) {
       return false // 逃げられる場所がある
@@ -150,14 +150,14 @@ export function isCheckmate(board: BoardCell[][], player: Player): boolean {
 
   // 2. 王手をかけている駒を取れるかチェック
   const attackers = getAttackingPieces(board, player)
-  
+
   // 複数の駒から王手されている場合は取れない（両王手）
   if (attackers.length > 1) {
     return true
   }
 
   const attacker = attackers[0]
-  
+
   // 自分の駒で攻撃者を取れるかチェック
   for (let row = 0; row < 9; row++) {
     for (let col = 0; col < 9; col++) {
@@ -201,7 +201,7 @@ function canBlockCheck(
 
   // 王と攻撃者の間のマスを取得
   const pathPositions = getPathBetween(attacker.position, kingPosition)
-  
+
   // 各マスに自分の駒を移動または打つことができるかチェック
   for (const blockPosition of pathPositions) {
     // 駒の移動で防げるか
@@ -254,14 +254,10 @@ function getPathBetween(from: Position, to: Position): Position[] {
 /**
  * 王手をかける手かどうかチェック
  */
-export function isCheckingMove(
-  board: BoardCell[][],
-  from: Position,
-  to: Position
-): boolean {
+export function isCheckingMove(board: BoardCell[][], from: Position, to: Position): boolean {
   // ボードのコピーを作成
-  const tempBoard = board.map(row => 
-    row.map(cell => ({
+  const tempBoard = board.map((row) =>
+    row.map((cell) => ({
       ...cell,
       piece: cell.piece ? { ...cell.piece } : null
     }))

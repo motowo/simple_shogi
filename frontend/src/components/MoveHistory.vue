@@ -2,9 +2,7 @@
   <div class="move-history">
     <h3 class="history-title">手順</h3>
     <div class="history-content">
-      <div v-if="moves.length === 0" class="no-moves">
-        まだ手が指されていません
-      </div>
+      <div v-if="moves.length === 0" class="no-moves">まだ手が指されていません</div>
       <div v-else class="moves-list">
         <div
           v-for="(move, index) in moves"
@@ -36,17 +34,17 @@ const formatMove = (move: Move) => {
   const pieceChar = getPieceDisplayName(move.piece)
   const fromPos = formatKifuPosition(move.from)
   const toPos = formatKifuPosition(move.to)
-  
+
   let moveText = `${pieceChar}${fromPos}-${toPos}`
-  
+
   if (move.capturedPiece) {
     moveText += '取'
   }
-  
+
   if (move.isPromotion) {
     moveText += '成'
   }
-  
+
   return moveText
 }
 </script>
@@ -56,11 +54,11 @@ const formatMove = (move: Move) => {
   border: 2px solid #8b4513;
   border-radius: 8px;
   padding: 16px;
-  margin: 8px;
   background-color: #faebd7;
-  min-width: 200px;
-  max-width: 300px;
-  max-height: 400px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .history-title {
@@ -72,8 +70,9 @@ const formatMove = (move: Move) => {
 }
 
 .history-content {
-  max-height: 320px;
+  flex: 1;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .no-moves {

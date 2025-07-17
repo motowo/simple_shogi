@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { 
-  canPromoteAt, 
-  mustPromoteAt, 
-  isInPromotionZone, 
-  promoteMovePiece 
-} from '../promotion'
+import { canPromoteAt, mustPromoteAt, isInPromotionZone, promoteMovePiece } from '../promotion'
 import { initializeEmptyBoard } from '../boardUtils'
 import type { Piece, Position } from '../../types/shogi'
 
@@ -53,7 +48,7 @@ describe('promotion', () => {
     it('allows promotion when moving from promotion zone', () => {
       const pawn: Piece = { type: 'pawn', player: 'sente', isPromoted: false }
       const from: Position = { row: 2, col: 4 } // 成り駒圏内
-      const to: Position = { row: 3, col: 4 }   // 成り駒圏外
+      const to: Position = { row: 3, col: 4 } // 成り駒圏外
 
       expect(canPromoteAt(pawn, from, to)).toBe(true)
     })
@@ -84,7 +79,7 @@ describe('promotion', () => {
 
     it('requires promotion for knight reaching the end rows', () => {
       const knight: Piece = { type: 'knight', player: 'sente', isPromoted: false }
-      
+
       expect(mustPromoteAt(knight, { row: 0, col: 4 })).toBe(true)
       expect(mustPromoteAt(knight, { row: 1, col: 4 })).toBe(true)
       expect(mustPromoteAt(knight, { row: 2, col: 4 })).toBe(false)

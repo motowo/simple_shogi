@@ -46,7 +46,7 @@ describe('PromotionDialog', () => {
 
     const pieceOptions = wrapper.findAll('.piece-option')
     expect(pieceOptions).toHaveLength(2)
-    
+
     const pieces = wrapper.findAllComponents({ name: 'ShogiPiece' })
     expect(pieces).toHaveLength(2)
   })

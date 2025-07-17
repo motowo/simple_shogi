@@ -10,7 +10,7 @@ describe('ShogiPiece', () => {
       player: 'sente',
       isPromoted: false
     }
-    
+
     const wrapper = mount(ShogiPiece, { props: { piece } })
     expect(wrapper.find('.piece-character').text()).toBe('王')
   })
@@ -21,7 +21,7 @@ describe('ShogiPiece', () => {
       player: 'gote',
       isPromoted: false
     }
-    
+
     const wrapper = mount(ShogiPiece, { props: { piece } })
     expect(wrapper.find('.piece-character').text()).toBe('飛')
   })
@@ -32,7 +32,7 @@ describe('ShogiPiece', () => {
       player: 'sente',
       isPromoted: true
     }
-    
+
     const wrapper = mount(ShogiPiece, { props: { piece } })
     expect(wrapper.find('.piece-character').text()).toBe('と')
     expect(wrapper.find('.shogi-piece').classes()).toContain('promoted')
@@ -44,7 +44,7 @@ describe('ShogiPiece', () => {
       player: 'sente',
       isPromoted: false
     }
-    
+
     const wrapper = mount(ShogiPiece, { props: { piece } })
     const pieceElement = wrapper.find('.shogi-piece')
     expect(pieceElement.classes()).toContain('sente')
@@ -57,7 +57,7 @@ describe('ShogiPiece', () => {
       player: 'gote',
       isPromoted: false
     }
-    
+
     const wrapper = mount(ShogiPiece, { props: { piece } })
     const pieceElement = wrapper.find('.shogi-piece')
     expect(pieceElement.classes()).toContain('gote')
@@ -70,7 +70,7 @@ describe('ShogiPiece', () => {
       player: 'sente',
       isPromoted: true
     }
-    
+
     const wrapper = mount(ShogiPiece, { props: { piece } })
     const pieceElement = wrapper.find('.shogi-piece')
     expect(pieceElement.classes()).toContain('promoted')
@@ -83,7 +83,7 @@ describe('ShogiPiece', () => {
       player: 'gote',
       isPromoted: false
     }
-    
+
     const wrapper = mount(ShogiPiece, { props: { piece } })
     const pieceElement = wrapper.find('.shogi-piece')
     expect(pieceElement.classes()).not.toContain('promoted')

@@ -1,19 +1,11 @@
 <template>
   <div class="shogi-board-container">
-    <!-- 後手の持ち駒 -->
-    <CapturedPieces
-      player="gote"
-      :droppable-pieces="getDroppablePieces(capturedPieces, 'gote')"
-      :is-selectable="currentPlayer === 'gote'"
-      @piece-click="handleDropPieceSelect"
-    />
-    
     <!-- 現在のプレイヤー表示 -->
     <div class="current-player" :class="{ 'in-check': isInCheck }">
       現在の手番: {{ currentPlayer === 'sente' ? '先手' : '後手' }}
       <span v-if="isInCheck && !isGameOver" class="check-indicator">王手！</span>
     </div>
-    
+
     <!-- ゲーム終了表示 -->
     <div v-if="isGameOver" class="game-over">
       <h2>{{ winner === 'sente' ? '先手' : '後手' }}の勝ち！</h2>
@@ -21,84 +13,89 @@
       <p v-if="gameEndReason === 'resign'">投了です</p>
       <button class="new-game-button" @click="resetGame">新しいゲーム</button>
     </div>
-    
+
     <!-- 操作ボタン -->
     <div class="control-buttons">
-      <ResignButton 
+      <ResignButton
         :current-player="currentPlayer"
         :is-game-over="isGameOver"
         @resign="handleResign"
       />
       <ResetButton @reset="resetGame" />
     </div>
-    
-    <!-- 列ラベル（上部） -->
-    <div class="col-labels">
-      <div class="corner-spacer"></div>
-      <div
-        v-for="(label, index) in COL_LABELS"
-        :key="`col-${index}`"
-        class="col-label"
-      >
-        {{ label }}
-      </div>
-    </div>
 
-    <!-- 盤面とサイドラベル -->
-    <div class="board-with-labels">
-      <!-- 行ラベル（左側） -->
-      <div class="row-labels">
-        <div
-          v-for="(label, index) in ROW_LABELS"
-          :key="`row-${index}`"
-          class="row-label"
-        >
-          {{ label }}
+    <!-- メインゲームエリア（盤面と左右の持ち駒、右側の手順） -->
+    <div class="main-game-area">
+      <!-- 左側の持ち駒エリア（後手） -->
+      <div class="side-captured-pieces left-side">
+        <CapturedPieces
+          player="gote"
+          :droppable-pieces="getDroppablePieces(capturedPieces, 'gote')"
+          :is-selectable="currentPlayer === 'gote'"
+          @piece-click="handleDropPieceSelect"
+        />
+      </div>
+
+      <!-- 中央の盤面エリア -->
+      <div class="board-area">
+        <!-- 列ラベル（上部） -->
+        <div class="col-labels">
+          <div class="corner-spacer"></div>
+          <div v-for="(label, index) in COL_LABELS" :key="`col-${index}`" class="col-label">
+            {{ label }}
+          </div>
         </div>
-      </div>
 
-      <!-- 将棋盤 -->
-      <div class="shogi-board">
-        <div
-          v-for="(row, rowIndex) in board"
-          :key="`row-${rowIndex}`"
-          class="board-row"
-        >
-          <div
-            v-for="(cell, colIndex) in row"
-            :key="`cell-${rowIndex}-${colIndex}`"
-            class="board-cell"
-            :data-row="rowIndex"
-            :data-col="colIndex"
-            :class="{
-              'highlighted': cell.isHighlighted,
-              'selected': cell.isSelected
-            }"
-            @click="handleCellClick(rowIndex, colIndex)"
-          >
-            <ShogiPiece 
-              v-if="cell.piece" 
-              :piece="cell.piece" 
-            />
+        <!-- 盤面とサイドラベル -->
+        <div class="board-with-labels">
+          <!-- 行ラベル（左側） -->
+          <div class="row-labels">
+            <div v-for="(label, index) in ROW_LABELS" :key="`row-${index}`" class="row-label">
+              {{ label }}
+            </div>
+          </div>
+
+          <!-- 将棋盤 -->
+          <div class="shogi-board">
+            <div v-for="(row, rowIndex) in board" :key="`row-${rowIndex}`" class="board-row">
+              <div
+                v-for="(cell, colIndex) in row"
+                :key="`cell-${rowIndex}-${colIndex}`"
+                class="board-cell"
+                :data-row="rowIndex"
+                :data-col="colIndex"
+                :class="{
+                  highlighted: cell.isHighlighted,
+                  selected: cell.isSelected
+                }"
+                @click="handleCellClick(rowIndex, colIndex)"
+              >
+                <ShogiPiece v-if="cell.piece" :piece="cell.piece" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- 右側のエリア（先手の持ち駒と手順） -->
+      <div class="right-side-area">
+        <!-- 先手の持ち駒 -->
+        <div class="side-captured-pieces right-side">
+          <CapturedPieces
+            player="sente"
+            :droppable-pieces="getDroppablePieces(capturedPieces, 'sente')"
+            :is-selectable="currentPlayer === 'sente'"
+            @piece-click="handleDropPieceSelect"
+          />
+        </div>
+
+        <!-- 手数表示（縦長） -->
+        <div class="move-history-area">
+          <MoveHistory :moves="moveHistory" />
+        </div>
+      </div>
     </div>
-    
-    <!-- ゲームエリア -->
-    <div class="game-area">
-      <!-- 先手の持ち駒 -->
-      <CapturedPieces
-        player="sente"
-        :droppable-pieces="getDroppablePieces(capturedPieces, 'sente')"
-        :is-selectable="currentPlayer === 'sente'"
-        @piece-click="handleDropPieceSelect"
-      />
-      
-      <!-- 手数表示 -->
-      <MoveHistory :moves="moveHistory" />
-    </div>
-    
+
     <!-- 成り確認ダイアログ -->
     <PromotionDialog
       v-if="promotionPiece"
@@ -118,11 +115,11 @@ import { ROW_LABELS, COL_LABELS } from '../types/shogi'
 import { formatKifuPosition, isSamePosition } from '../utils/boardUtils'
 import { initializeGameBoard } from '../utils/initialBoard'
 import { getPossibleMoves, isValidMove } from '../utils/moveValidation'
-import { 
-  addCapturedPiece, 
-  canDropPiece, 
+import {
+  addCapturedPiece,
+  canDropPiece,
   getDroppablePieces as getDroppablePiecesUtil,
-  removeCapturedPiece 
+  removeCapturedPiece
 } from '../utils/capturedPieces'
 import { handlePromotion } from '../utils/promotion'
 import { isKingInCheck, isCheckmate, isCheckingMove } from '../utils/checkDetection'
@@ -160,7 +157,7 @@ const initializeBoard = () => {
   capturedPieces.value = new Map()
   capturedPieces.value.set('sente', [])
   capturedPieces.value.set('gote', [])
-  
+
   // ゲーム状態をリセット
   currentPlayer.value = 'sente'
   isInCheck.value = false
@@ -168,7 +165,7 @@ const initializeBoard = () => {
   winner.value = null
   gameEndReason.value = null
   moveHistory.value = []
-  
+
   clearSelection()
 }
 
@@ -191,7 +188,7 @@ const getDroppablePieces = (capturedPieces: Map<Player, Piece[]>, player: Player
 const checkGameState = () => {
   // 現在のプレイヤーが王手されているかチェック
   isInCheck.value = isKingInCheck(board.value, currentPlayer.value)
-  
+
   // 詰みかどうかチェック
   if (isInCheck.value && isCheckmate(board.value, currentPlayer.value)) {
     isGameOver.value = true
@@ -205,10 +202,10 @@ const clearSelection = () => {
   selectedPosition.value = null
   selectedDropPiece.value = null
   possibleMoves.value = []
-  
+
   // 全てのセルの選択状態とハイライト状態をクリア
-  board.value.forEach(row => {
-    row.forEach(cell => {
+  board.value.forEach((row) => {
+    row.forEach((cell) => {
       cell.isSelected = false
       cell.isHighlighted = false
     })
@@ -218,13 +215,13 @@ const clearSelection = () => {
 const handleDropPieceSelect = (pieceType: PieceType) => {
   // ゲーム終了時は操作無効
   if (isGameOver.value) return
-  
+
   clearSelection()
   selectedDropPiece.value = pieceType
-  
+
   // 駒を打てる位置をハイライト
   highlightDroppablePositions(pieceType)
-  
+
   console.log(`Selected drop piece: ${pieceType}`)
 }
 
@@ -232,7 +229,9 @@ const highlightDroppablePositions = (pieceType: PieceType) => {
   for (let row = 0; row < 9; row++) {
     for (let col = 0; col < 9; col++) {
       const position = { row, col }
-      if (canDropPiece(board.value, capturedPieces.value, currentPlayer.value, pieceType, position)) {
+      if (
+        canDropPiece(board.value, capturedPieces.value, currentPlayer.value, pieceType, position)
+      ) {
         board.value[row][col].isHighlighted = true
       }
     }
@@ -242,69 +241,77 @@ const highlightDroppablePositions = (pieceType: PieceType) => {
 const selectPiece = (row: number, col: number) => {
   const position = { row, col }
   const cell = board.value[row][col]
-  
+
   // 駒がない場合は何もしない
   if (!cell.piece) return
-  
+
   // 現在のプレイヤーの駒でない場合は何もしない
   if (cell.piece.player !== currentPlayer.value) return
-  
+
   // 既に選択されている場合は選択解除
   if (selectedPosition.value && isSamePosition(selectedPosition.value, position)) {
     clearSelection()
     return
   }
-  
+
   // 新しい駒を選択
   clearSelection()
   selectedPosition.value = position
   cell.isSelected = true
-  
+
   // 可能な手を計算（仮実装：前方1マス）
   calculatePossibleMoves(position, cell.piece)
-  
+
   console.log(`Selected piece at ${formatKifuPosition(position)}`)
 }
 
 const calculatePossibleMoves = (position: Position, piece: Piece) => {
   const moves = getPossibleMoves(board.value, position, piece)
-  
+
   // 可能な手をハイライト表示
-  moves.forEach(move => {
+  moves.forEach((move) => {
     board.value[move.row][move.col].isHighlighted = true
   })
-  
+
   possibleMoves.value = moves
 }
 
 const handleCellClick = (row: number, col: number) => {
   // ゲーム終了時は操作無効
   if (isGameOver.value) return
-  
+
   const position = { row, col }
   const kifuPosition = formatKifuPosition(position)
-  
+
   console.log(`Clicked cell at ${kifuPosition} (row: ${row}, col: ${col})`)
-  
+
   // 駒打ちが選択されている場合
   if (selectedDropPiece.value) {
-    if (canDropPiece(board.value, capturedPieces.value, currentPlayer.value, selectedDropPiece.value, position)) {
+    if (
+      canDropPiece(
+        board.value,
+        capturedPieces.value,
+        currentPlayer.value,
+        selectedDropPiece.value,
+        position
+      )
+    ) {
       // 駒打ち処理
       const droppedPiece: Piece = {
         type: selectedDropPiece.value,
         player: currentPlayer.value,
         isPromoted: false
       }
-      
+
       board.value[row][col].piece = droppedPiece
       removeCapturedPiece(capturedPieces.value, currentPlayer.value, selectedDropPiece.value)
-      
+
       // 手番を交代
       currentPlayer.value = currentPlayer.value === 'sente' ? 'gote' : 'sente'
-      
+
       // ゲーム状態をチェック
       checkGameState()
-      
+
       clearSelection()
       console.log(`Dropped ${selectedDropPiece.value} at ${kifuPosition}`)
     } else {
@@ -312,37 +319,37 @@ const handleCellClick = (row: number, col: number) => {
     }
     return
   }
-  
+
   // 駒が選択されていない場合は駒を選択
   if (!selectedPosition.value) {
     selectPiece(row, col)
     return
   }
-  
+
   // 駒が選択されている場合
   const cell = board.value[row][col]
-  
+
   // 同じ駒をクリックした場合は選択解除
   if (isSamePosition(selectedPosition.value, position)) {
     clearSelection()
     return
   }
-  
+
   // 自分の駒をクリックした場合は選択変更
   if (cell.piece && cell.piece.player === currentPlayer.value) {
     selectPiece(row, col)
     return
   }
-  
+
   // 移動が有効かチェック
   if (isValidMove(board.value, selectedPosition.value, position)) {
     // 成り判定
     const selectedCell = board.value[selectedPosition.value.row][selectedPosition.value.col]
     const targetCell = board.value[row][col]
     const movingPiece = selectedCell.piece!
-    
+
     const promotionResult = handlePromotion(movingPiece, selectedPosition.value, position)
-    
+
     if (promotionResult.canPromote && !promotionResult.mustPromote) {
       // 成り選択ダイアログを表示
       promotionPiece.value = movingPiece
@@ -360,10 +367,16 @@ const handleCellClick = (row: number, col: number) => {
   }
 }
 
-const executeMove = (from: Position, to: Position, piece: Piece, capturedPiece: Piece | null, isPromotion: boolean = false) => {
+const executeMove = (
+  from: Position,
+  to: Position,
+  piece: Piece,
+  capturedPiece: Piece | null,
+  isPromotion: boolean = false
+) => {
   // 王手かどうかをチェック（移動前）
   const isCheck = isCheckingMove(board.value, from, to)
-  
+
   // 手を記録
   const move: Move = {
     from,
@@ -374,24 +387,24 @@ const executeMove = (from: Position, to: Position, piece: Piece, capturedPiece: 
     timestamp: new Date()
   }
   moveHistory.value.push(move)
-  
+
   // 駒を取る場合は持ち駒に追加
   if (capturedPiece) {
     addCapturedPiece(capturedPieces.value, currentPlayer.value, capturedPiece)
   }
-  
+
   // 移動実行
   board.value[to.row][to.col].piece = piece
   board.value[from.row][from.col].piece = null
-  
+
   // 手番を交代
   currentPlayer.value = currentPlayer.value === 'sente' ? 'gote' : 'sente'
-  
+
   // ゲーム状態をチェック
   checkGameState()
-  
+
   clearSelection()
-  
+
   if (isCheck) {
     console.log(`王手！ Moved to ${formatKifuPosition(to)}`)
   } else {
@@ -401,14 +414,16 @@ const executeMove = (from: Position, to: Position, piece: Piece, capturedPiece: 
 
 const handlePromotionChoice = (promote: boolean) => {
   showPromotionDialog.value = false
-  
+
   if (promotionPiece.value && promotionFrom.value && promotionTo.value) {
     const targetCell = board.value[promotionTo.value.row][promotionTo.value.col]
-    const finalPiece = promote ? handlePromotion(promotionPiece.value, promotionFrom.value, promotionTo.value, true).piece : promotionPiece.value
-    
+    const finalPiece = promote
+      ? handlePromotion(promotionPiece.value, promotionFrom.value, promotionTo.value, true).piece
+      : promotionPiece.value
+
     executeMove(promotionFrom.value, promotionTo.value, finalPiece, targetCell.piece, promote)
   }
-  
+
   // 成り関連の状態をリセット
   promotionPiece.value = null
   promotionFrom.value = null
@@ -423,7 +438,7 @@ const handleKeydown = (event: KeyboardEvent) => {
     event.preventDefault()
     resetGame()
   }
-  
+
   // Escape で選択解除
   if (event.key === 'Escape') {
     clearSelection()
@@ -479,14 +494,26 @@ onUnmounted(() => {
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 @keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0.5; }
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0.5;
+  }
 }
 
 .game-over {
@@ -553,12 +580,49 @@ onUnmounted(() => {
   border-radius: 8px;
 }
 
-.game-area {
+/* 新しいレイアウト用スタイル */
+.main-game-area {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
   gap: 20px;
-  margin-top: 16px;
+  margin: 16px 0;
+  justify-content: center;
+}
+
+.board-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.side-captured-pieces {
+  width: 180px;
+  min-height: 450px;
+}
+
+.left-side {
+  /* 後手の持ち駒（左側） */
+}
+
+.right-side-area {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 250px;
+}
+
+.right-side {
+  /* 先手の持ち駒（右側上部） */
+}
+
+.move-history-area {
+  flex: 1;
+  padding: 16px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  min-height: 200px;
 }
 
 .col-labels {
@@ -655,32 +719,72 @@ onUnmounted(() => {
 }
 
 /* レスポンシブデザイン */
+@media (max-width: 1024px) {
+  .main-game-area {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .side-captured-pieces {
+    width: 100%;
+    min-height: auto;
+  }
+
+  .right-side-area {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .move-history-area {
+    max-height: 300px;
+    min-height: 150px;
+  }
+}
+
 @media (max-width: 768px) {
   .shogi-board-container {
     padding: 10px;
   }
-  
-  .game-area {
+
+  .main-game-area {
     flex-direction: column;
     align-items: center;
   }
-  
+
+  .side-captured-pieces {
+    width: 100%;
+    min-height: auto;
+  }
+
+  .right-side-area {
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+  }
+
   .control-buttons {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .board-cell {
     width: 40px;
     height: 40px;
   }
-  
-  .col-label, .row-label {
+
+  .col-label,
+  .row-label {
     font-size: 14px;
   }
-  
+
   .current-player {
     font-size: 16px;
+  }
+
+  .move-history-area {
+    max-height: 200px;
+    min-height: 100px;
   }
 }
 
@@ -689,11 +793,11 @@ onUnmounted(() => {
     width: 35px;
     height: 35px;
   }
-  
+
   .piece-character {
     font-size: 14px;
   }
-  
+
   .shogi-board-container {
     padding: 8px;
   }
@@ -725,20 +829,20 @@ onUnmounted(() => {
     background-color: #3a3a3a;
     color: #e0e0e0;
   }
-  
+
   .shogi-board {
     background-color: #4a4a4a;
   }
-  
+
   .current-player {
     background-color: rgba(70, 70, 70, 0.8);
     color: #e0e0e0;
   }
-  
+
   .board-cell {
     background-color: #4a4a4a;
   }
-  
+
   .board-cell:hover {
     background-color: rgba(255, 255, 0, 0.3);
   }
