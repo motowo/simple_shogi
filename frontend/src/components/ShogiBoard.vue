@@ -17,8 +17,19 @@
     <!-- ゲーム終了表示 -->
     <div v-if="isGameOver" class="game-over">
       <h2>{{ winner === 'sente' ? '先手' : '後手' }}の勝ち！</h2>
-      <p>詰みです</p>
-      <button class="reset-button" @click="resetGame">新しいゲーム</button>
+      <p v-if="gameEndReason === 'checkmate'">詰みです</p>
+      <p v-if="gameEndReason === 'resign'">投了です</p>
+      <button class="new-game-button" @click="resetGame">新しいゲーム</button>
+    </div>
+    
+    <!-- 操作ボタン -->
+    <div class="control-buttons">
+      <ResignButton 
+        :current-player="currentPlayer"
+        :is-game-over="isGameOver"
+        @resign="handleResign"
+      />
+      <ResetButton @reset="resetGame" />
     </div>
     
     <!-- 列ラベル（上部） -->
@@ -74,13 +85,19 @@
       </div>
     </div>
     
-    <!-- 先手の持ち駒 -->
-    <CapturedPieces
-      player="sente"
-      :droppable-pieces="getDroppablePieces(capturedPieces, 'sente')"
-      :is-selectable="currentPlayer === 'sente'"
-      @piece-click="handleDropPieceSelect"
-    />
+    <!-- ゲームエリア -->
+    <div class="game-area">
+      <!-- 先手の持ち駒 -->
+      <CapturedPieces
+        player="sente"
+        :droppable-pieces="getDroppablePieces(capturedPieces, 'sente')"
+        :is-selectable="currentPlayer === 'sente'"
+        @piece-click="handleDropPieceSelect"
+      />
+      
+      <!-- 手数表示 -->
+      <MoveHistory :moves="moveHistory" />
+    </div>
     
     <!-- 成り確認ダイアログ -->
     <PromotionDialog
@@ -95,8 +112,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import type { BoardCell, Position, Player, Piece, PieceType } from '../types/shogi'
+import { ref, onMounted, onUnmounted } from 'vue'
+import type { BoardCell, Position, Player, Piece, PieceType, Move } from '../types/shogi'
 import { ROW_LABELS, COL_LABELS } from '../types/shogi'
 import { formatKifuPosition, isSamePosition } from '../utils/boardUtils'
 import { initializeGameBoard } from '../utils/initialBoard'
@@ -112,6 +129,9 @@ import { isKingInCheck, isCheckmate, isCheckingMove } from '../utils/checkDetect
 import ShogiPiece from './ShogiPiece.vue'
 import CapturedPieces from './CapturedPieces.vue'
 import PromotionDialog from './PromotionDialog.vue'
+import ResignButton from './ResignButton.vue'
+import ResetButton from './ResetButton.vue'
+import MoveHistory from './MoveHistory.vue'
 
 // 9x9の将棋盤を初期化
 const board = ref<BoardCell[][]>([])
@@ -132,6 +152,8 @@ const mustPromote = ref(false)
 const isInCheck = ref(false)
 const isGameOver = ref(false)
 const winner = ref<Player | null>(null)
+const gameEndReason = ref<'checkmate' | 'resign' | null>(null)
+const moveHistory = ref<Move[]>([])
 
 const initializeBoard = () => {
   board.value = initializeGameBoard()
@@ -144,12 +166,22 @@ const initializeBoard = () => {
   isInCheck.value = false
   isGameOver.value = false
   winner.value = null
+  gameEndReason.value = null
+  moveHistory.value = []
   
   clearSelection()
 }
 
 const resetGame = () => {
   initializeBoard()
+}
+
+const handleResign = (resigningPlayer: Player) => {
+  isGameOver.value = true
+  winner.value = resigningPlayer === 'sente' ? 'gote' : 'sente'
+  gameEndReason.value = 'resign'
+  clearSelection()
+  console.log(`${resigningPlayer} resigned. Winner: ${winner.value}`)
 }
 
 const getDroppablePieces = (capturedPieces: Map<Player, Piece[]>, player: Player) => {
@@ -164,7 +196,8 @@ const checkGameState = () => {
   if (isInCheck.value && isCheckmate(board.value, currentPlayer.value)) {
     isGameOver.value = true
     winner.value = currentPlayer.value === 'sente' ? 'gote' : 'sente'
-    console.log(`Game Over! Winner: ${winner.value}`)
+    gameEndReason.value = 'checkmate'
+    console.log(`Game Over! Winner: ${winner.value} by checkmate`)
   }
 }
 
@@ -327,9 +360,20 @@ const handleCellClick = (row: number, col: number) => {
   }
 }
 
-const executeMove = (from: Position, to: Position, piece: Piece, capturedPiece: Piece | null) => {
+const executeMove = (from: Position, to: Position, piece: Piece, capturedPiece: Piece | null, isPromotion: boolean = false) => {
   // 王手かどうかをチェック（移動前）
   const isCheck = isCheckingMove(board.value, from, to)
+  
+  // 手を記録
+  const move: Move = {
+    from,
+    to,
+    piece: { ...piece, isPromoted: piece.isPromoted }, // 移動前の駒の状態
+    capturedPiece: capturedPiece ? { ...capturedPiece } : undefined,
+    isPromotion,
+    timestamp: new Date()
+  }
+  moveHistory.value.push(move)
   
   // 駒を取る場合は持ち駒に追加
   if (capturedPiece) {
@@ -362,7 +406,7 @@ const handlePromotionChoice = (promote: boolean) => {
     const targetCell = board.value[promotionTo.value.row][promotionTo.value.col]
     const finalPiece = promote ? handlePromotion(promotionPiece.value, promotionFrom.value, promotionTo.value, true).piece : promotionPiece.value
     
-    executeMove(promotionFrom.value, promotionTo.value, finalPiece, targetCell.piece)
+    executeMove(promotionFrom.value, promotionTo.value, finalPiece, targetCell.piece, promote)
   }
   
   // 成り関連の状態をリセット
@@ -372,9 +416,28 @@ const handlePromotionChoice = (promote: boolean) => {
   mustPromote.value = false
 }
 
+// キーボードショートカット
+const handleKeydown = (event: KeyboardEvent) => {
+  // Ctrl/Cmd + R でリセット
+  if ((event.ctrlKey || event.metaKey) && event.key === 'r') {
+    event.preventDefault()
+    resetGame()
+  }
+  
+  // Escape で選択解除
+  if (event.key === 'Escape') {
+    clearSelection()
+  }
+}
+
 // コンポーネントマウント時に盤面を初期化
 onMounted(() => {
   initializeBoard()
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown)
 })
 </script>
 
@@ -386,6 +449,8 @@ onMounted(() => {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .current-player {
@@ -462,8 +527,38 @@ onMounted(() => {
   transition: background-color 0.2s ease;
 }
 
-.reset-button:hover {
+.new-game-button {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.new-game-button:hover {
   background-color: #357abd;
+}
+
+.control-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 16px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+}
+
+.game-area {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-top: 16px;
 }
 
 .col-labels {
@@ -557,5 +652,95 @@ onMounted(() => {
 
 .board-cell:last-child {
   border-right: 2px solid #8b4513;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 768px) {
+  .shogi-board-container {
+    padding: 10px;
+  }
+  
+  .game-area {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .control-buttons {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .board-cell {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .col-label, .row-label {
+    font-size: 14px;
+  }
+  
+  .current-player {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .board-cell {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .piece-character {
+    font-size: 14px;
+  }
+  
+  .shogi-board-container {
+    padding: 8px;
+  }
+}
+
+/* アクセシビリティ改善 */
+@media (prefers-reduced-motion: reduce) {
+  .board-cell,
+  .current-player,
+  .check-indicator,
+  .confirm-button {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* フォーカス表示 */
+.board-cell:focus,
+.resign-button:focus,
+.reset-button:focus,
+.confirm-button:focus {
+  outline: 3px solid #4a90e2;
+  outline-offset: 2px;
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .shogi-board-container {
+    background-color: #3a3a3a;
+    color: #e0e0e0;
+  }
+  
+  .shogi-board {
+    background-color: #4a4a4a;
+  }
+  
+  .current-player {
+    background-color: rgba(70, 70, 70, 0.8);
+    color: #e0e0e0;
+  }
+  
+  .board-cell {
+    background-color: #4a4a4a;
+  }
+  
+  .board-cell:hover {
+    background-color: rgba(255, 255, 0, 0.3);
+  }
 }
 </style>
