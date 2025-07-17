@@ -39,6 +39,7 @@ export interface BoardState {
   currentPlayer: Player
   selectedPosition: Position | null
   possibleMoves: Position[]
+  capturedPieces: Map<Player, Piece[]>
 }
 
 // ゲーム状態

@@ -1,5 +1,13 @@
 <template>
   <div class="shogi-board-container">
+    <!-- 後手の持ち駒 -->
+    <CapturedPieces
+      player="gote"
+      :droppable-pieces="getDroppablePieces(capturedPieces, 'gote')"
+      :is-selectable="currentPlayer === 'gote'"
+      @piece-click="handleDropPieceSelect"
+    />
+    
     <!-- 現在のプレイヤー表示 -->
     <div class="current-player">
       現在の手番: {{ currentPlayer === 'sente' ? '先手' : '後手' }}
@@ -57,30 +65,55 @@
         </div>
       </div>
     </div>
+    
+    <!-- 先手の持ち駒 -->
+    <CapturedPieces
+      player="sente"
+      :droppable-pieces="getDroppablePieces(capturedPieces, 'sente')"
+      :is-selectable="currentPlayer === 'sente'"
+      @piece-click="handleDropPieceSelect"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import type { BoardCell, Position, Player } from '../types/shogi'
+import type { BoardCell, Position, Player, Piece, PieceType } from '../types/shogi'
 import { ROW_LABELS, COL_LABELS } from '../types/shogi'
 import { formatKifuPosition, isSamePosition } from '../utils/boardUtils'
 import { initializeGameBoard } from '../utils/initialBoard'
 import { getPossibleMoves, isValidMove } from '../utils/moveValidation'
+import { 
+  addCapturedPiece, 
+  canDropPiece, 
+  getDroppablePieces as getDroppablePiecesUtil,
+  removeCapturedPiece 
+} from '../utils/capturedPieces'
 import ShogiPiece from './ShogiPiece.vue'
+import CapturedPieces from './CapturedPieces.vue'
 
 // 9x9の将棋盤を初期化
 const board = ref<BoardCell[][]>([])
 const selectedPosition = ref<Position | null>(null)
 const currentPlayer = ref<Player>('sente')
 const possibleMoves = ref<Position[]>([])
+const capturedPieces = ref<Map<Player, Piece[]>>(new Map())
+const selectedDropPiece = ref<PieceType | null>(null)
 
 const initializeBoard = () => {
   board.value = initializeGameBoard()
+  capturedPieces.value = new Map()
+  capturedPieces.value.set('sente', [])
+  capturedPieces.value.set('gote', [])
+}
+
+const getDroppablePieces = (capturedPieces: Map<Player, Piece[]>, player: Player) => {
+  return getDroppablePiecesUtil(capturedPieces, player)
 }
 
 const clearSelection = () => {
   selectedPosition.value = null
+  selectedDropPiece.value = null
   possibleMoves.value = []
   
   // 全てのセルの選択状態とハイライト状態をクリア
@@ -90,6 +123,27 @@ const clearSelection = () => {
       cell.isHighlighted = false
     })
   })
+}
+
+const handleDropPieceSelect = (pieceType: PieceType) => {
+  clearSelection()
+  selectedDropPiece.value = pieceType
+  
+  // 駒を打てる位置をハイライト
+  highlightDroppablePositions(pieceType)
+  
+  console.log(`Selected drop piece: ${pieceType}`)
+}
+
+const highlightDroppablePositions = (pieceType: PieceType) => {
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      const position = { row, col }
+      if (canDropPiece(board.value, capturedPieces.value, currentPlayer.value, pieceType, position)) {
+        board.value[row][col].isHighlighted = true
+      }
+    }
+  }
 }
 
 const selectPiece = (row: number, col: number) => {
@@ -136,6 +190,30 @@ const handleCellClick = (row: number, col: number) => {
   
   console.log(`Clicked cell at ${kifuPosition} (row: ${row}, col: ${col})`)
   
+  // 駒打ちが選択されている場合
+  if (selectedDropPiece.value) {
+    if (canDropPiece(board.value, capturedPieces.value, currentPlayer.value, selectedDropPiece.value, position)) {
+      // 駒打ち処理
+      const droppedPiece: Piece = {
+        type: selectedDropPiece.value,
+        player: currentPlayer.value,
+        isPromoted: false
+      }
+      
+      board.value[row][col].piece = droppedPiece
+      removeCapturedPiece(capturedPieces.value, currentPlayer.value, selectedDropPiece.value)
+      
+      // 手番を交代
+      currentPlayer.value = currentPlayer.value === 'sente' ? 'gote' : 'sente'
+      
+      clearSelection()
+      console.log(`Dropped ${selectedDropPiece.value} at ${kifuPosition}`)
+    } else {
+      clearSelection()
+    }
+    return
+  }
+  
   // 駒が選択されていない場合は駒を選択
   if (!selectedPosition.value) {
     selectPiece(row, col)
@@ -162,6 +240,11 @@ const handleCellClick = (row: number, col: number) => {
     // 移動処理
     const selectedCell = board.value[selectedPosition.value.row][selectedPosition.value.col]
     const targetCell = board.value[row][col]
+    
+    // 駒を取る場合は持ち駒に追加
+    if (targetCell.piece) {
+      addCapturedPiece(capturedPieces.value, currentPlayer.value, targetCell.piece)
+    }
     
     targetCell.piece = selectedCell.piece
     selectedCell.piece = null
