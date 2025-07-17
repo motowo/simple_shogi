@@ -9,8 +9,16 @@
     />
     
     <!-- 現在のプレイヤー表示 -->
-    <div class="current-player">
+    <div class="current-player" :class="{ 'in-check': isInCheck }">
       現在の手番: {{ currentPlayer === 'sente' ? '先手' : '後手' }}
+      <span v-if="isInCheck && !isGameOver" class="check-indicator">王手！</span>
+    </div>
+    
+    <!-- ゲーム終了表示 -->
+    <div v-if="isGameOver" class="game-over">
+      <h2>{{ winner === 'sente' ? '先手' : '後手' }}の勝ち！</h2>
+      <p>詰みです</p>
+      <button class="reset-button" @click="resetGame">新しいゲーム</button>
     </div>
     
     <!-- 列ラベル（上部） -->
@@ -100,6 +108,7 @@ import {
   removeCapturedPiece 
 } from '../utils/capturedPieces'
 import { handlePromotion } from '../utils/promotion'
+import { isKingInCheck, isCheckmate, isCheckingMove } from '../utils/checkDetection'
 import ShogiPiece from './ShogiPiece.vue'
 import CapturedPieces from './CapturedPieces.vue'
 import PromotionDialog from './PromotionDialog.vue'
@@ -119,15 +128,44 @@ const promotionFrom = ref<Position | null>(null)
 const promotionTo = ref<Position | null>(null)
 const mustPromote = ref(false)
 
+// ゲーム状態
+const isInCheck = ref(false)
+const isGameOver = ref(false)
+const winner = ref<Player | null>(null)
+
 const initializeBoard = () => {
   board.value = initializeGameBoard()
   capturedPieces.value = new Map()
   capturedPieces.value.set('sente', [])
   capturedPieces.value.set('gote', [])
+  
+  // ゲーム状態をリセット
+  currentPlayer.value = 'sente'
+  isInCheck.value = false
+  isGameOver.value = false
+  winner.value = null
+  
+  clearSelection()
+}
+
+const resetGame = () => {
+  initializeBoard()
 }
 
 const getDroppablePieces = (capturedPieces: Map<Player, Piece[]>, player: Player) => {
   return getDroppablePiecesUtil(capturedPieces, player)
+}
+
+const checkGameState = () => {
+  // 現在のプレイヤーが王手されているかチェック
+  isInCheck.value = isKingInCheck(board.value, currentPlayer.value)
+  
+  // 詰みかどうかチェック
+  if (isInCheck.value && isCheckmate(board.value, currentPlayer.value)) {
+    isGameOver.value = true
+    winner.value = currentPlayer.value === 'sente' ? 'gote' : 'sente'
+    console.log(`Game Over! Winner: ${winner.value}`)
+  }
 }
 
 const clearSelection = () => {
@@ -145,6 +183,9 @@ const clearSelection = () => {
 }
 
 const handleDropPieceSelect = (pieceType: PieceType) => {
+  // ゲーム終了時は操作無効
+  if (isGameOver.value) return
+  
   clearSelection()
   selectedDropPiece.value = pieceType
   
@@ -204,6 +245,9 @@ const calculatePossibleMoves = (position: Position, piece: Piece) => {
 }
 
 const handleCellClick = (row: number, col: number) => {
+  // ゲーム終了時は操作無効
+  if (isGameOver.value) return
+  
   const position = { row, col }
   const kifuPosition = formatKifuPosition(position)
   
@@ -224,6 +268,9 @@ const handleCellClick = (row: number, col: number) => {
       
       // 手番を交代
       currentPlayer.value = currentPlayer.value === 'sente' ? 'gote' : 'sente'
+      
+      // ゲーム状態をチェック
+      checkGameState()
       
       clearSelection()
       console.log(`Dropped ${selectedDropPiece.value} at ${kifuPosition}`)
@@ -281,6 +328,9 @@ const handleCellClick = (row: number, col: number) => {
 }
 
 const executeMove = (from: Position, to: Position, piece: Piece, capturedPiece: Piece | null) => {
+  // 王手かどうかをチェック（移動前）
+  const isCheck = isCheckingMove(board.value, from, to)
+  
   // 駒を取る場合は持ち駒に追加
   if (capturedPiece) {
     addCapturedPiece(capturedPieces.value, currentPlayer.value, capturedPiece)
@@ -293,8 +343,16 @@ const executeMove = (from: Position, to: Position, piece: Piece, capturedPiece: 
   // 手番を交代
   currentPlayer.value = currentPlayer.value === 'sente' ? 'gote' : 'sente'
   
+  // ゲーム状態をチェック
+  checkGameState()
+  
   clearSelection()
-  console.log(`Moved to ${formatKifuPosition(to)}`)
+  
+  if (isCheck) {
+    console.log(`王手！ Moved to ${formatKifuPosition(to)}`)
+  } else {
+    console.log(`Moved to ${formatKifuPosition(to)}`)
+  }
 }
 
 const handlePromotionChoice = (promote: boolean) => {
@@ -339,6 +397,73 @@ onMounted(() => {
   padding: 8px 16px;
   background-color: rgba(255, 255, 255, 0.8);
   border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.current-player.in-check {
+  background-color: rgba(255, 200, 200, 0.9);
+  border: 2px solid #ff4444;
+  animation: pulse 1s infinite;
+}
+
+.check-indicator {
+  color: #ff4444;
+  font-weight: bold;
+  margin-left: 8px;
+  animation: blink 1s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.5; }
+}
+
+.game-over {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  border: 3px solid #8b4513;
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+.game-over h2 {
+  font-size: 24px;
+  color: #8b4513;
+  margin-bottom: 16px;
+}
+
+.game-over p {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 24px;
+}
+
+.reset-button {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.reset-button:hover {
+  background-color: #357abd;
 }
 
 .col-labels {

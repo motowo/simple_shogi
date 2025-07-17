@@ -1,5 +1,6 @@
 import type { BoardCell, Position, Piece, PieceType } from '../types/shogi'
 import { isValidPosition } from './boardUtils'
+import { wouldBeInCheckAfterMove } from './checkDetection'
 
 /**
  * 指定された移動が有効かどうかを検証する
@@ -7,7 +8,8 @@ import { isValidPosition } from './boardUtils'
 export function isValidMove(
   board: BoardCell[][],
   from: Position,
-  to: Position
+  to: Position,
+  checkSelfCheck: boolean = true
 ): boolean {
   // 移動先が盤面内かチェック
   if (!isValidPosition(to)) {
@@ -29,7 +31,16 @@ export function isValidMove(
   }
 
   // 駒の種類に応じた移動ルールをチェック
-  return isPieceMoveLegal(board, from, to, fromCell.piece)
+  if (!isPieceMoveLegal(board, from, to, fromCell.piece)) {
+    return false
+  }
+
+  // 自分が王手になる手は無効（循環参照を避けるためオプション）
+  if (checkSelfCheck && wouldBeInCheckAfterMove(board, from, to, fromCell.piece.player)) {
+    return false
+  }
+
+  return true
 }
 
 /**
